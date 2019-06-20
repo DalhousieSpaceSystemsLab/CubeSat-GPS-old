@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+# Folders
+Source/build/*
+Source/source/.vscode/*
+
+# CMake files
+*.cmake
+
