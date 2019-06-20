@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+#include <string>
+#include <cstring>
+#include <vector>
 
 using namespace std;
 struct gps_data {
