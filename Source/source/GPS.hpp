@@ -23,3 +23,4 @@ string poll();
 gps_data decode(string raw);
 string get_message();
 bool send_message(gps_data decoded_data);
+vector<string> read_nmea_from_file();
