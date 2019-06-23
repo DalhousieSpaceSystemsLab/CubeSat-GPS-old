@@ -57,7 +57,8 @@ bool send_message(gps_data decoded_data) {
 vector<string> read_nmea_from_file() {
     vector<string> nmea_data;
     string line;
-    ifstream nmea_file("nmea01.txt");
+	//will need to be set per build environment. This is set for "build" directory
+    ifstream nmea_file("../source/resources/nmea_data/nmea01.txt");
     
     if(nmea_file.is_open()) {
         while(getline(nmea_file, line)) {

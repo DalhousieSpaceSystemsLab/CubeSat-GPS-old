@@ -1,0 +1,22 @@
+01
+Halifax - Portland, moving south-west (288 lines in file)
+
+
+02
+Minneapolis MN, moving north (36 lines in file)
+Distance between points should be 8600m
+
+
+03
+Pacific Ocean, crossing date line, moving south-west (738 lines in file)
+Distance between points shold be 8600m
+
+
+04
+Japan into China, moving south-west (402 lines in file)
+Distance between points should be 17200m
+
+
+05
+France to Poland, moving north-west (78 lines in file)
+Distance between points is irregular
