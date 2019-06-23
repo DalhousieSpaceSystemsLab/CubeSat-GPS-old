@@ -1,4 +1,8 @@
 #include "GPS.hpp"
+#include "include/minmea.h"
+#include <fstream>
+#include <sstream>
+#define INDENT_SPACES "  "
 
 GPS_Data_Types data_types;
 //checks if GPS is turned on, if not, turn on. 
@@ -22,25 +26,59 @@ string poll() {
 }
 
 //send in a NMEA string, get organized gps_data
-gps_data decode(string raw) {
-	minmea_sentence_gga frame;
-	if (minmea_parse_gga(&frame, raw.c_str())) {
-		cout << "true" << endl;
-		printf(INDENT_SPACES "$xxGGA: raw coordinates : (%d/%d,%d/%d)\n",
-                            frame.latitude.value, frame.latitude.scale,
-                            frame.longitude.value, frame.longitude.scale);
-        printf(INDENT_SPACES "$xxGGA fixed-point coordinates scaled to three decimal places: (%d,%d)\n",
-                            minmea_rescale(&frame.latitude, 1000),
-                            minmea_rescale(&frame.longitude, 1000));
-        printf(INDENT_SPACES "$xxGGA floating point degree coordinates: (%f,%f)\n\n",
-                            minmea_tocoord(&frame.latitude),
-                            minmea_tocoord(&frame.longitude));
+gps_data decode(string raw) { 
+	gps_data data = {};
+	minmea_sentence_gga ggaFrame;
+	minmea_sentence_rmc rmcFrame;
+	minmea_sentence_gll gllFrame;
+	minmea_sentence_gst gstFrame;
+	minmea_sentence_vtg vtgFrame;
+	minmea_sentence_zda zdaFrame;
+
+	const char *parse = raw.c_str();
+	stringstream ss(parse);
+	string to;
+	if (parse != NULL) {
+		while (getline(ss, to, '\n')) {
+			string sentence = to;
+			if (minmea_parse_gga(&ggaFrame, sentence.c_str())) {
+				data.altitudeMeters = minmea_tofloat(&ggaFrame.altitude);
+				data.latitude = minmea_tocoord(&ggaFrame.latitude);
+				data.longitude = minmea_tocoord(&ggaFrame.longitude);
+				data.time_stamp = toStringTime(&ggaFrame.time);
+			}
+			else if (minmea_parse_rmc(&rmcFrame, sentence.c_str())) {
+				data.latitude = minmea_tocoord(&rmcFrame.latitude);
+				data.longitude = minmea_tocoord(&rmcFrame.longitude);
+				data.time_stamp = toStringTime(&rmcFrame.time);
+				data.speedKnots =  minmea_tofloat(&rmcFrame.speed);
+			}
+			else if (minmea_parse_gll(&gllFrame, sentence.c_str())) {
+				data.latitude = minmea_tocoord(&gllFrame.latitude);
+				data.longitude = minmea_tocoord(&gllFrame.longitude);
+				data.time_stamp = toStringTime(&gllFrame.time);
+			}
+			else if (minmea_parse_gst(&gstFrame, sentence.c_str())) {
+				data.time_stamp = toStringTime(&gstFrame.time);
+			}
+			else if (minmea_parse_vtg(&vtgFrame, sentence.c_str())) {
+				data.speedKnots = minmea_tofloat(&vtgFrame.speed_knots);
+			}
+			else if (minmea_parse_zda(&zdaFrame, sentence.c_str())) {
+				data.time_stamp = toStringTime(&zdaFrame.time);
+			}
+		}
 	}
-	else {
-		cout << "false" << endl;
-	}
-	gps_data data;
+	printf("time: %s\naltitude: %f\n(%f, %f)\nspeed: %f\n\n",
+		data.time_stamp.c_str(), data.altitudeMeters, data.latitude, data.longitude, data.speedKnots);
+	
 	return data;
+}
+
+string toStringTime(struct minmea_time *time) {
+	stringstream timeString;
+	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
+	return timeString.str();
 }
 
 string get_message() {
@@ -115,12 +153,24 @@ vector<string> read_nmea_from_file() {
 int main() {
     vector<string> nmea_data;
     
-	decode("abc"); //should be false
-	decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"); //should be true
-	
 	nmea_data = read_nmea_from_file();
 	cout << "\n" << "Read data from file: " << nmea_data[0] << "\n";
 	send_message(decode(nmea_data[0]));
+	decode(nmea_data[0]);
+	decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47\n$GPZDA,201530.00,04,07,2002,00,00*60");
+	decode("$GPZDA,201530.00,04,07,2002,00,00*60");
+	stringstream paragraph;
+	paragraph << "$GPRMC,002454,A,3553.5295,N,13938.6570,E,0.0,43.1,180700,7.1,W,A*3F\n";
+	paragraph << "$GPGGA,023042,3907.3837,N,12102.4684,W,1,04,2.3,507.3,M,-24.1,M,,*75";
+	paragraph << "$GPGGA, 002454, 3553.5295, N, 13938.6570, E, 1, 05, 2.2, 18.3, M, 39.0, M, , *7F";
+	paragraph << "$GPGSA, A, 3, 01, 04, 07, 16, 20, , , , , , , , 3.6, 2.2, 2.7 * 35";
+	paragraph << "$GPGSV, 3, 1, 09, 01, 38, 103, 37, 02, 23, 215, 00, 04, 38, 297, 37, 05, 00, 328, 00 * 70";
+	paragraph << "$GPGSV, 3, 2, 09, 07, 77, 299, 47, 11, 07, 087, 00, 16, 74, 041, 47, 20, 38, 044, 43 * 73";
+	paragraph << "$GPGSV, 3, 3, 09, 24, 12, 282, 00 * 4D";
+	paragraph << "$GPGLL, 3553.5295, N, 13938.6570, E, 002454, A, A * 4F";
+	paragraph << "$GPRMC, 002456, A, 3553.5295, N, 13938.6570, E, 0.0, 43.1, 180700, 7.1, W, A * 3D";
+	decode(paragraph.str());
+	decode("$GPVTG, 054.7, T, 034.4, M, 005.5, N, 010.2, K * 48");
 }
 
 
