@@ -1,18 +1,16 @@
 #include <iostream>
 #include <string>
-#include <string>
 #include <cstring>
 #include <vector>
+#include "minmea.h"
 
 using namespace std;
 struct gps_data {
-    string type;
-    int time_stamp;
-    string latitude;
-    string longitude;
-    int num_sats;
-    float horizontal_dilution;
-    float altitude;
+    string time_stamp;
+    float latitude;
+    float longitude;
+    float altitudeMeters;
+	float speedKnots;
 };
 
 bool gpsOn;
@@ -24,3 +22,4 @@ gps_data decode(string raw);
 string get_message();
 bool send_message(gps_data decoded_data);
 vector<string> read_nmea_from_file();
+string toStringTime(struct minmea_time *time);
