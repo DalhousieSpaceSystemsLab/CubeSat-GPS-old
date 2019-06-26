@@ -1,12 +1,4 @@
 #include "GPS.hpp"
-#include "include/minmea.h"
-#include "Message.h"
-#include "MessageBuilder.h"
-#include "MessageSerializer.h"
-#include "MessageSenderInterface.h"
-#include "GPS_Data_Types.h"
-#include <fstream>
-#define INDENT_SPACES "  "
 
 GPS_Data_Types data_types;
 //checks if GPS is turned on, if not, turn on. 
