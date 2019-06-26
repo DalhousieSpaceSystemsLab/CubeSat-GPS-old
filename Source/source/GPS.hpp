@@ -6,10 +6,10 @@
 
 using namespace std;
 struct gps_data {
-    string type;
+    int type;
     int time_stamp;
-    string latitude;
-    string longitude;
+    float latitude;
+    float longitude;
     int num_sats;
     float horizontal_dilution;
     float altitude;

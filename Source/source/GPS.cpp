@@ -1,8 +1,14 @@
 #include "GPS.hpp"
 #include "include/minmea.h"
+#include "Message.h"
+#include "MessageBuilder.h"
+#include "MessageSerializer.h"
+#include "MessageSenderInterface.h"
+#include "GPS_Data_Types.h"
 #include <fstream>
 #define INDENT_SPACES "  "
 
+GPS_Data_Types data_types;
 //checks if GPS is turned on, if not, turn on. 
 //returns TRUE if successful, FALSE otherwise
 bool init_gps() {
@@ -34,7 +40,7 @@ gps_data decode(string raw) {
         printf(INDENT_SPACES "$xxGGA fixed-point coordinates scaled to three decimal places: (%d,%d)\n",
                             minmea_rescale(&frame.latitude, 1000),
                             minmea_rescale(&frame.longitude, 1000));
-        printf(INDENT_SPACES "$xxGGA floating point degree coordinates: (%f,%f)\n",
+        printf(INDENT_SPACES "$xxGGA floating point degree coordinates: (%f,%f)\n\n",
                             minmea_tocoord(&frame.latitude),
                             minmea_tocoord(&frame.longitude));
 	}
@@ -51,6 +57,47 @@ string get_message() {
 }
 
 bool send_message(gps_data decoded_data) {
+	MessageBuilder messageBuilder;
+	messageBuilder.StartMessage();
+
+	KeyValuePairContainer container;
+	container.AddKeyValuePair(data_types.altitude, decoded_data.altitude);
+	container.AddKeyValuePair(data_types.horizontal_dilution, decoded_data.horizontal_dilution);
+	container.AddKeyValuePair(data_types.latitude, decoded_data.latitude);
+	container.AddKeyValuePair(data_types.longitude, decoded_data.longitude);
+	container.AddKeyValuePair(data_types.num_sats, decoded_data.num_sats);
+	container.AddKeyValuePair(data_types.time_stamp, decoded_data.time_stamp);
+	container.AddKeyValuePair(data_types.type, decoded_data.type);
+
+	messageBuilder.SetMessageContents(container);
+	messageBuilder.SetRecipient(1097346);
+	messageBuilder.SetSender(6858902);
+
+	Message message = messageBuilder.CompleteMessage();
+
+	char msg[256] = "";
+	message.flatten(msg);
+	//SerializeMessage(&message, msg);
+	MessageSenderInterface ms(message.GetRecipient());
+	ms.SendMessage(msg);
+
+	message = Message(msg);
+
+
+	vector<int> keys = message.GetMessageContents().GetKeys();
+
+	KeyValuePairContainer c = message.GetMessageContents();
+	cout << "\nRECIPIENT: " << message.GetRecipient() << endl
+		 << "SENDER: " << message.GetSender() << endl
+		 << "TIME CREATED: " << message.GetTimeCreated() << endl
+		 << "CONTENTS:" << endl
+		 << INDENT_SPACES << "TYPE: " << message.GetMessageContents().GetInt(data_types.type) << endl
+		 << INDENT_SPACES << "TIME STAMP: " << message.GetMessageContents().GetInt(data_types.time_stamp) << endl
+		 << INDENT_SPACES << "LATITUDE: " << message.GetMessageContents().GetFloat(data_types.latitude) << endl
+		 << INDENT_SPACES << "LONGITUDE: " << message.GetMessageContents().GetFloat(data_types.longitude) << endl
+		 << INDENT_SPACES << "NUM_SATS: " << message.GetMessageContents().GetInt(data_types.num_sats) << endl
+		 << INDENT_SPACES << "HORIZONTAL DILUTION: " << message.GetMessageContents().GetFloat(data_types.horizontal_dilution) << endl
+		 << INDENT_SPACES << "ALTITUDE: " << message.GetMessageContents().GetFloat(data_types.altitude) << endl;
 	return true;
 }
 
@@ -81,7 +128,7 @@ int main() {
 	
 	nmea_data = read_nmea_from_file();
 	cout << "\n" << "Read data from file: " << nmea_data[0] << "\n";
-	decode(nmea_data[0]);
+	send_message(decode(nmea_data[0]));
 }
 
 
