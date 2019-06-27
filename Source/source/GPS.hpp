@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+<<<<<<< HEAD
 #include "include/minmea.h"
 
 //Gathered from https://github.com/AndrewWay/cubesat/tree/develop on June 25th, 2019
@@ -21,13 +22,13 @@ struct gps_data {
     float altitudeMeters;
     float speedKnots;
 };
-
 bool gpsOn;
 
 int main();
 bool init_gps();
 string poll();
-gps_data decode(string raw);
+void decode(string raw);
+void resetData();
 string get_message();
 bool send_message(gps_data decoded_data);
 vector<string> read_nmea_from_file();
