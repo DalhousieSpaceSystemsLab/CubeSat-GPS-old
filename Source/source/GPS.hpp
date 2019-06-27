@@ -16,11 +16,15 @@ struct gps_data {
 };
 
 bool gpsOn;
+ifstream *nmea_datafile = NULL;
 
 int main();
 bool init_gps();
-string poll();
+bool poll(string *message);
 gps_data decode(string raw);
 string get_message();
 bool send_message(gps_data decoded_data);
-vector<string> read_nmea_from_file();
+
+bool read_nmea_from_file(string fn, string *data);
+void close_nmea_file();
+void open_nmea_file(string fn);
