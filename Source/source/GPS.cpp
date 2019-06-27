@@ -70,7 +70,7 @@ gps_data decode(string raw) {
 		}
 	}
 	printf("time: %s\naltitude: %f\n(%f, %f)\nspeed: %f\n\n",
-		data->time_stamp.c_str(), data->altitudeMeters, data->latitude, data->longitude, data->speedKnots);
+		data.time_stamp.c_str(), data.altitudeMeters, data.latitude, data.longitude, data.speedKnots);
 	
 	return data;
 }
