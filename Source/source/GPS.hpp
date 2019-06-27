@@ -2,7 +2,6 @@
 #include <string>
 #include <cstring>
 #include <vector>
-<<<<<<< HEAD
 #include "include/minmea.h"
 
 //Gathered from https://github.com/AndrewWay/cubesat/tree/develop on June 25th, 2019
