@@ -26,8 +26,8 @@ string poll() {
 }
 
 //send in a NMEA string, get organized gps_data
-void decode(string raw) {
-	unique_ptr<gps_data> data;
+gps_data decode(string raw) { 
+	gps_data data = {};
 	minmea_sentence_gga ggaFrame;
 	minmea_sentence_rmc rmcFrame;
 	minmea_sentence_gll gllFrame;
@@ -42,35 +42,37 @@ void decode(string raw) {
 		while (getline(ss, to, '\n')) {
 			string sentence = to;
 			if (minmea_parse_gga(&ggaFrame, sentence.c_str())) {
-				data->altitudeMeters = minmea_tofloat(&ggaFrame.altitude);
-				data->latitude = minmea_tocoord(&ggaFrame.latitude);
-				data->longitude = minmea_tocoord(&ggaFrame.longitude);
-				data->time_stamp = toStringTime(&ggaFrame.time);
+				data.altitudeMeters = minmea_tofloat(&ggaFrame.altitude);
+				data.latitude = minmea_tocoord(&ggaFrame.latitude);
+				data.longitude = minmea_tocoord(&ggaFrame.longitude);
+				data.time_stamp = toStringTime(&ggaFrame.time);
 			}
 			else if (minmea_parse_rmc(&rmcFrame, sentence.c_str())) {
-				data->latitude = minmea_tocoord(&rmcFrame.latitude);
-				data->longitude = minmea_tocoord(&rmcFrame.longitude);
-				data->time_stamp = toStringTime(&rmcFrame.time);
-				data->speedKnots =  minmea_tofloat(&rmcFrame.speed);
+				data.latitude = minmea_tocoord(&rmcFrame.latitude);
+				data.longitude = minmea_tocoord(&rmcFrame.longitude);
+				data.time_stamp = toStringTime(&rmcFrame.time);
+				data.speedKnots =  minmea_tofloat(&rmcFrame.speed);
 			}
 			else if (minmea_parse_gll(&gllFrame, sentence.c_str())) {
-				data->latitude = minmea_tocoord(&gllFrame.latitude);
-				data->longitude = minmea_tocoord(&gllFrame.longitude);
-				data->time_stamp = toStringTime(&gllFrame.time);
+				data.latitude = minmea_tocoord(&gllFrame.latitude);
+				data.longitude = minmea_tocoord(&gllFrame.longitude);
+				data.time_stamp = toStringTime(&gllFrame.time);
 			}
 			else if (minmea_parse_gst(&gstFrame, sentence.c_str())) {
-				data->time_stamp = toStringTime(&gstFrame.time);
+				data.time_stamp = toStringTime(&gstFrame.time);
 			}
 			else if (minmea_parse_vtg(&vtgFrame, sentence.c_str())) {
-				data->speedKnots = minmea_tofloat(&vtgFrame.speed_knots);
+				data.speedKnots = minmea_tofloat(&vtgFrame.speed_knots);
 			}
 			else if (minmea_parse_zda(&zdaFrame, sentence.c_str())) {
-				data->time_stamp = toStringTime(&zdaFrame.time);
+				data.time_stamp = toStringTime(&zdaFrame.time);
 			}
 		}
 	}
 	printf("time: %s\naltitude: %f\n(%f, %f)\nspeed: %f\n\n",
 		data->time_stamp.c_str(), data->altitudeMeters, data->latitude, data->longitude, data->speedKnots);
+	
+	return data;
 }
 
 string toStringTime(struct minmea_time *time) {
@@ -155,20 +157,30 @@ int main() {
 	cout << "\n" << "Read data from file: " << nmea_data[0] << "\n";
 	send_message(decode(nmea_data[0]));
 	decode(nmea_data[0]);
-	decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47\n$GPZDA,201530.00,04,07,2002,00,00*60");
 	decode("$GPZDA,201530.00,04,07,2002,00,00*60");
+	decode("$GPVTG,054.7,T,034.4,M,005.5,N,010.2,K*48");
+	decode("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A");
+	decode("$GPGLL,3553.5295,N,13938.6570,E,002454,A,A*4F");
+	decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47");
+	decode("$GPZDA,201530.00,04,07,2002,00,00*60");
+	decode("$GPGST,172814.0,0.006,0.023,0.020,273.6,0.023,0.020,0.031*6A");
+
+	decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47\n$GPZDA,201530.00,04,07,2002,00,00*60");
 	stringstream paragraph;
 	paragraph << "$GPRMC,002454,A,3553.5295,N,13938.6570,E,0.0,43.1,180700,7.1,W,A*3F\n";
-	paragraph << "$GPGGA,023042,3907.3837,N,12102.4684,W,1,04,2.3,507.3,M,-24.1,M,,*75";
-	paragraph << "$GPGGA, 002454, 3553.5295, N, 13938.6570, E, 1, 05, 2.2, 18.3, M, 39.0, M, , *7F";
-	paragraph << "$GPGSA, A, 3, 01, 04, 07, 16, 20, , , , , , , , 3.6, 2.2, 2.7 * 35";
-	paragraph << "$GPGSV, 3, 1, 09, 01, 38, 103, 37, 02, 23, 215, 00, 04, 38, 297, 37, 05, 00, 328, 00 * 70";
-	paragraph << "$GPGSV, 3, 2, 09, 07, 77, 299, 47, 11, 07, 087, 00, 16, 74, 041, 47, 20, 38, 044, 43 * 73";
-	paragraph << "$GPGSV, 3, 3, 09, 24, 12, 282, 00 * 4D";
-	paragraph << "$GPGLL, 3553.5295, N, 13938.6570, E, 002454, A, A * 4F";
-	paragraph << "$GPRMC, 002456, A, 3553.5295, N, 13938.6570, E, 0.0, 43.1, 180700, 7.1, W, A * 3D";
+	paragraph << "$GPGGA,023042,3907.3837,N,12102.4684,W,1,04,2.3,507.3,M,-24.1,M,,*75\n";
+	paragraph << "$GPGGA,002454,3553.5295,N,13938.6570,E,1,05,2.2,18.3,M,39.0,M,,*7F\n";
+	paragraph << "$GPGSA,A,3,01,04,07,16,20,,,,,,,,3.6,2.2,2.7*35\n";
+	paragraph << "$GPGSV,3,1,09,01,38,103,37,02,23,215,00,04,38,297,37,05,00,328,00*70\n";
+	paragraph << "$GPGSV,3,2,09,07,77,299,47,11,07,087,00,16,74,041,47,20,38,044,43*73\n";
+	paragraph << "$GPVTG,054.7,T,034.4,M,005.5,N,010.2,K*48";
+	paragraph << "$GPGSV,3,3,09,24,12,282,00*4D\n";
+	paragraph << "$GPGLL,3553.5295,N,13938.6570,E,082484,A,A*4F\n";
+
 	decode(paragraph.str());
 	decode("$GPVTG, 054.7, T, 034.4, M, 005.5, N, 010.2, K * 48");
+
+	decode("$GPGGA,023042,3907.3837,N,12102.4684,W,1,04,2.3,507.3,M,-24.1,M,,*75\n$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A");
 }
 
 
