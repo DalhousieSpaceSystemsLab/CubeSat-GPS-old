@@ -1,3 +1,5 @@
+//Make sure to update cubesat/core/src/message/identifiers/GPSKeys.h with modifications
+
 struct GPS_Data_Types {
     int type = 0;
     int time_stamp = 1;

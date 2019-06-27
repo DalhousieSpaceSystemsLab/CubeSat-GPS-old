@@ -23,6 +23,11 @@ string poll() {
 
 //send in a NMEA string, get organized gps_data
 gps_data decode(string raw) {
+	// lat and longitude must be done in to_coord
+	// everything else to float
+	
+
+
 	minmea_sentence_gga frame;
 	if (minmea_parse_gga(&frame, raw.c_str())) {
 		cout << "true" << endl;
@@ -116,7 +121,7 @@ int main() {
     vector<string> nmea_data;
     
 	decode("abc"); //should be false
-	decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"); //should be true
+	send_message(decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47")); //should be true
 	
 	nmea_data = read_nmea_from_file();
 	cout << "\n" << "Read data from file: " << nmea_data[0] << "\n";
