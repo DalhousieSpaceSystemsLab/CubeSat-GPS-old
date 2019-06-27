@@ -21,13 +21,13 @@ struct gps_data {
     float altitudeMeters;
     float speedKnots;
 };
-
 bool gpsOn;
 
 int main();
 bool init_gps();
 string poll();
-gps_data decode(string raw);
+void decode(string raw);
+void resetData();
 string get_message();
 bool send_message(gps_data decoded_data);
 vector<string> read_nmea_from_file();

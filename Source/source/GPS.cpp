@@ -26,8 +26,8 @@ string poll() {
 }
 
 //send in a NMEA string, get organized gps_data
-gps_data decode(string raw) { 
-	gps_data data = {};
+void decode(string raw) {
+	unique_ptr<gps_data> data;
 	minmea_sentence_gga ggaFrame;
 	minmea_sentence_rmc rmcFrame;
 	minmea_sentence_gll gllFrame;
@@ -42,37 +42,35 @@ gps_data decode(string raw) {
 		while (getline(ss, to, '\n')) {
 			string sentence = to;
 			if (minmea_parse_gga(&ggaFrame, sentence.c_str())) {
-				data.altitudeMeters = minmea_tofloat(&ggaFrame.altitude);
-				data.latitude = minmea_tocoord(&ggaFrame.latitude);
-				data.longitude = minmea_tocoord(&ggaFrame.longitude);
-				data.time_stamp = toStringTime(&ggaFrame.time);
+				data->altitudeMeters = minmea_tofloat(&ggaFrame.altitude);
+				data->latitude = minmea_tocoord(&ggaFrame.latitude);
+				data->longitude = minmea_tocoord(&ggaFrame.longitude);
+				data->time_stamp = toStringTime(&ggaFrame.time);
 			}
 			else if (minmea_parse_rmc(&rmcFrame, sentence.c_str())) {
-				data.latitude = minmea_tocoord(&rmcFrame.latitude);
-				data.longitude = minmea_tocoord(&rmcFrame.longitude);
-				data.time_stamp = toStringTime(&rmcFrame.time);
-				data.speedKnots =  minmea_tofloat(&rmcFrame.speed);
+				data->latitude = minmea_tocoord(&rmcFrame.latitude);
+				data->longitude = minmea_tocoord(&rmcFrame.longitude);
+				data->time_stamp = toStringTime(&rmcFrame.time);
+				data->speedKnots =  minmea_tofloat(&rmcFrame.speed);
 			}
 			else if (minmea_parse_gll(&gllFrame, sentence.c_str())) {
-				data.latitude = minmea_tocoord(&gllFrame.latitude);
-				data.longitude = minmea_tocoord(&gllFrame.longitude);
-				data.time_stamp = toStringTime(&gllFrame.time);
+				data->latitude = minmea_tocoord(&gllFrame.latitude);
+				data->longitude = minmea_tocoord(&gllFrame.longitude);
+				data->time_stamp = toStringTime(&gllFrame.time);
 			}
 			else if (minmea_parse_gst(&gstFrame, sentence.c_str())) {
-				data.time_stamp = toStringTime(&gstFrame.time);
+				data->time_stamp = toStringTime(&gstFrame.time);
 			}
 			else if (minmea_parse_vtg(&vtgFrame, sentence.c_str())) {
-				data.speedKnots = minmea_tofloat(&vtgFrame.speed_knots);
+				data->speedKnots = minmea_tofloat(&vtgFrame.speed_knots);
 			}
 			else if (minmea_parse_zda(&zdaFrame, sentence.c_str())) {
-				data.time_stamp = toStringTime(&zdaFrame.time);
+				data->time_stamp = toStringTime(&zdaFrame.time);
 			}
 		}
 	}
 	printf("time: %s\naltitude: %f\n(%f, %f)\nspeed: %f\n\n",
-		data.time_stamp.c_str(), data.altitudeMeters, data.latitude, data.longitude, data.speedKnots);
-	
-	return data;
+		data->time_stamp.c_str(), data->altitudeMeters, data->latitude, data->longitude, data->speedKnots);
 }
 
 string toStringTime(struct minmea_time *time) {
@@ -151,7 +149,7 @@ vector<string> read_nmea_from_file() {
 
 //scheduler class to send messages
 int main() {
-    vector<string> nmea_data;
+	vector<string> nmea_data;
     
 	nmea_data = read_nmea_from_file();
 	cout << "\n" << "Read data from file: " << nmea_data[0] << "\n";
