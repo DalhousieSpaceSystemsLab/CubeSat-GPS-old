@@ -1,68 +1,100 @@
 #include "GPS.hpp"
-#include "include/minmea.h"
-#include <fstream>
-#define INDENT_SPACES "  "
 
+GPS_Data_Types data_types;
 //checks if GPS is turned on, if not, turn on. 
 //returns TRUE if successful, FALSE otherwise
 bool init_gps() {
-	if (!gpsOn) {
-		//if can turn on gps
-		gpsOn = true;
-		return true;
-		//if cant turn on gps, return false
-	}
-	return true;
+    if (!gpsOn) {
+        //if can turn on gps
+        gpsOn = true;
+        return true;
+        //if cant turn on gps, return false
+    }
+    return true;
 }
+
 
 //polls the GPS, gets data if turned on
 bool poll(string *message) {
-	if (gpsOn) {
-	    cout << "GPS on" << endl;
-		*message = get_message();
-		return true;
-	}
-	return false;
+    if (gpsOn) {
+        cout << "GPS on" << endl;
+    }
+    return read_nmea_from_file(message);
 }
 
 //send in a NMEA string, get organized gps_data
 gps_data decode(string raw) {
-	minmea_sentence_gga frame;
-	if (minmea_parse_gga(&frame, raw.c_str())) {
-		cout << "true" << endl;
-		printf(INDENT_SPACES "$xxGGA: raw coordinates : (%d/%d,%d/%d)\n",
+    minmea_sentence_gga frame;
+    if (minmea_parse_gga(&frame, raw.c_str())) {
+        cout << "true" << endl;
+        printf(INDENT_SPACES "$xxGGA: raw coordinates : (%d/%d,%d/%d)\n",
                             frame.latitude.value, frame.latitude.scale,
                             frame.longitude.value, frame.longitude.scale);
         printf(INDENT_SPACES "$xxGGA fixed-point coordinates scaled to three decimal places: (%d,%d)\n",
                             minmea_rescale(&frame.latitude, 1000),
                             minmea_rescale(&frame.longitude, 1000));
-        printf(INDENT_SPACES "$xxGGA floating point degree coordinates: (%f,%f)\n",
+        printf(INDENT_SPACES "$xxGGA floating point degree coordinates: (%f,%f)\n\n",
                             minmea_tocoord(&frame.latitude),
                             minmea_tocoord(&frame.longitude));
-	}
-	else {
-		cout << "false" << endl;
-	}
-	gps_data data;
-	return data;
-}
-
-string get_message() {
-    string message;
-	read_nmea_from_file("nmea01.txt", &message); // set message
-	return message;
+    }
+    else {
+        cout << "false" << endl;
+    }
+    gps_data data;
+    return data;
 }
 
 bool send_message(gps_data decoded_data) {
-	return true;
+    MessageBuilder messageBuilder;
+    messageBuilder.StartMessage();
+
+    KeyValuePairContainer container;
+    container.AddKeyValuePair(data_types.altitude, decoded_data.altitude);
+    container.AddKeyValuePair(data_types.horizontal_dilution, decoded_data.horizontal_dilution);
+    container.AddKeyValuePair(data_types.latitude, decoded_data.latitude);
+    container.AddKeyValuePair(data_types.longitude, decoded_data.longitude);
+    container.AddKeyValuePair(data_types.num_sats, decoded_data.num_sats);
+    container.AddKeyValuePair(data_types.time_stamp, decoded_data.time_stamp);
+    container.AddKeyValuePair(data_types.type, decoded_data.type);
+
+    messageBuilder.SetMessageContents(container);
+    messageBuilder.SetRecipient(1097346);
+    messageBuilder.SetSender(6858902);
+
+    Message message = messageBuilder.CompleteMessage();
+
+    char msg[256] = "";
+    message.flatten(msg);
+    //SerializeMessage(&message, msg);
+    MessageSenderInterface ms(message.GetRecipient());
+    ms.SendMessage(msg);
+
+    message = Message(msg);
+
+
+    vector<int> keys = message.GetMessageContents().GetKeys();
+
+    KeyValuePairContainer c = message.GetMessageContents();
+    cout << "\nRECIPIENT: " << message.GetRecipient() << endl
+         << "SENDER: " << message.GetSender() << endl
+         << "TIME CREATED: " << message.GetTimeCreated() << endl
+         << "CONTENTS:" << endl
+         << INDENT_SPACES << "TYPE: " << message.GetMessageContents().GetInt(data_types.type) << endl
+         << INDENT_SPACES << "TIME STAMP: " << message.GetMessageContents().GetInt(data_types.time_stamp) << endl
+         << INDENT_SPACES << "LATITUDE: " << message.GetMessageContents().GetFloat(data_types.latitude) << endl
+         << INDENT_SPACES << "LONGITUDE: " << message.GetMessageContents().GetFloat(data_types.longitude) << endl
+         << INDENT_SPACES << "NUM_SATS: " << message.GetMessageContents().GetInt(data_types.num_sats) << endl
+         << INDENT_SPACES << "HORIZONTAL DILUTION: " << message.GetMessageContents().GetFloat(data_types.horizontal_dilution) << endl
+         << INDENT_SPACES << "ALTITUDE: " << message.GetMessageContents().GetFloat(data_types.altitude) << endl;
+    return true;
 }
 
 // dummy method that reads static data directly from a file, emulating string data to be returned by GPS hardware
-bool read_nmea_from_file(string fn, string *data) {
+bool read_nmea_from_file(string *data) {
     string nmea_paragraph("");
     string line;
     
-    open_nmea_file(fn);
+    open_nmea_file(nmea_filename);
     
     if(nmea_datafile->is_open()) {
         //cout << "\tData file opened, reading three lines" << endl;
@@ -76,11 +108,11 @@ bool read_nmea_from_file(string fn, string *data) {
             }
         }
     } else {
-        cout << "Unable to open file: '" << fn << "'" << endl;
-        return false;
+        cout << "Unable to open file: '" << nmea_filename << "'" << endl;
     }
     *data = nmea_paragraph;
-    return true;
+
+    return (nmea_paragraph.length() > 0);
 }
 
 // dummy helper method for reading static data
@@ -94,7 +126,8 @@ void close_nmea_file() {
 // dummy helper method for reading static data
 void open_nmea_file(string fn) {
     if(!nmea_datafile) {
-        nmea_datafile = new ifstream(fn);
+        //will need to be set per build environment. This is set for "build" directory
+        nmea_datafile = new ifstream("../source/resources/nmea_data/" + fn);
         cout << INDENT_SPACES << "Reading from data file " + fn << endl;
     }
 }
@@ -103,37 +136,32 @@ void open_nmea_file(string fn) {
 int main() {
     string nmea_data;
     
-	decode("abc"); //should be false
-	decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"); //should be true
-	
-	
-	// Poll GPS once
-	cout << endl << "Polling GPS... " << endl;
-	init_gps();
-	if(poll(&nmea_data)) {
-	    cout << "\nRaw data from file: " << endl << nmea_data << endl;
-	    
-	    decode(nmea_data); // assumes that decode() parses paragraph to check sentence-type of each line (or that first sentence is always GGA)
-	    
-	    cout << "\nSanity check for first paragraph of nmea01.txt is:  45.3907333.. / -60.91918333.. degrees" << endl;
+    // Poll GPS once
+    cout << endl << "Polling GPS... " << endl;
+    init_gps();
+    if(poll(&nmea_data)) {
+        cout << "\nRaw data from file: " << endl << nmea_data << endl;
+        
+        send_message(decode(nmea_data)); // assumes that decode() parses paragraph to check sentence-type of each line (or that first sentence is always GGA)
+        
+        cout << "\nSanity check for first paragraph of nmea01.txt is:  45.3907333.. / -60.91918333.. degrees" << endl;
     }
-    close_nmea_file();
     
     
     // Set 'true' to print verification for ALL data in file, assuming *.check file exists
     if(false) {
-        string fn = "nmea01.txt";
         string paragraph, check_line;
-        ifstream check_file(fn + ".check");
-        open_nmea_file(fn);
+        ifstream check_file(nmea_filename + ".check");
         
-        while(read_nmea_from_file(fn, &paragraph)) {
-            decode(paragraph);
-            if(check_file.is_open() && !getline(check_file, check_line))
-                check_file.close();
-            cout << INDENT_SPACES << INDENT_SPACES << "Sanity check: " + check_line << endl << endl;
+        close_nmea_file(); // reset file stream
+        while(poll(&paragraph)) {
+            if(send_message(decode(paragraph))) {
+                if(check_file.is_open() && !getline(check_file, check_line))
+                    check_file.close();
+                else
+                    cout << INDENT_SPACES << INDENT_SPACES << "Sanity check: " + check_line << endl << endl;
+            }
         }
-        close_nmea_file();
     }
 }
 
