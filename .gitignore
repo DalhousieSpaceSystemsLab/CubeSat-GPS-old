@@ -34,6 +34,7 @@
 # Folders
 Source/build/*
 Source/source/.vscode/*
+Source/source/out/*
 
 # CMake files
 *.cmake
