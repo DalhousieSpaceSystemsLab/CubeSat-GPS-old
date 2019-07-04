@@ -6,7 +6,6 @@
 #define DALCUBESAT_MESSAGINGSERVICE_H
 
 #include "../identifiers/Identifiers.h"
-#include "UnixDomainStreamSocketClient.h"
 
 #include <string>
 
@@ -17,7 +16,7 @@ private:
     Identifier identifier_;
 protected:
     std::string IdentifierToProcessFilePath(unsigned int identifier);
-    UnixDomainStreamSocketClient client_socket_;
+   // UnixDomainStreamSocketClient client_socket_;
 };
 
 

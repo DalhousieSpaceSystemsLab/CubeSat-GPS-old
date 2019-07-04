@@ -1,0 +1,2 @@
+#pragma code_page(65001)
+1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "C:/Users/bethe/source/repos/CubeSat-GPS/Source/source/out/build/x64-Debug/CMakeFiles/Loris-GPS.dir/embed.manifest"

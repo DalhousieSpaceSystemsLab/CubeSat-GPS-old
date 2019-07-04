@@ -1,0 +1,3 @@
+C:/Users/bethe/source/repos/CubeSat-GPS/Source/source/out/build/x64-Debug/CMakeFiles/Loris-GPS.dir
+C:/Users/bethe/source/repos/CubeSat-GPS/Source/source/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/bethe/source/repos/CubeSat-GPS/Source/source/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
