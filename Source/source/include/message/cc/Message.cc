@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include "Message.h"
-#include <stdexcept>
+#include <string>
 
 Message::Message(){
 	this->time_created_=0;

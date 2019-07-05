@@ -137,10 +137,8 @@ int main() {
 	cout << "\n" << "Read data from file: " << nmea_data[0] << "\n";
 //	send_message(decode(nmea_data[0]));
 	decode(nmea_data[0]);
-
-	cout << "new data" << endl;
-	send_message(decode("$GPGGA,023042,4007.3837,N,12102.89684,W,1,04,2.3,507.3,M,-24.1,M,,*75"));
-	cout << endl << "back to old stuff" << endl;
+	
+	send_message(decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"));
 
 	decode("$GPGGA,012219,1237.038,N,01531.000,E,1,08,0.9,125.4,M,46.9,M,,*47\n$GPZDA,201530.00,04,07,2002,00,00*60");
 	stringstream paragraph;
