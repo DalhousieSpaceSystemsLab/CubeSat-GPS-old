@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/liamhebert/Documents/GitHub/CubeSat-GPS/Source/source/include/minmea.c
+minmea.h
+/Users/liamhebert/Documents/GitHub/CubeSat-GPS/Source/source/include/minmea.h
+stdlib.h
+-
+string.h
+-
+ctype.h
+-
+stdarg.h
+-
+time.h
+-
+
+/Users/liamhebert/Documents/GitHub/CubeSat-GPS/Source/source/include/minmea.h
+stdio.h
+-
+stdint.h
+-
+stdbool.h
+-
+errno.h
+-
+time.h
+-
+math.h
+-
+minmea_compat.h
+/Users/liamhebert/Documents/GitHub/CubeSat-GPS/Source/source/include/minmea_compat.h
+
+/Users/liamhebert/Documents/GitHub/CubeSat-GPS/Source/source/include/minmea_compat.h
+

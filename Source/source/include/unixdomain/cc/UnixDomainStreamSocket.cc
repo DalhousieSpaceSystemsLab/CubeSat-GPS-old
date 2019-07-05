@@ -10,12 +10,11 @@ int UnixDomainStreamSocket::InitializeSocket(char sun_path[]) {
     ClearAddress();
 
     this->path_ = sun_path;
+    //AF_UNIX is to be used for communication between sockets on the same host system
     socket_address_.sun_family = AF_UNIX;
     strcpy(socket_address_.sun_path, sun_path);
 
     cout << "Initialize socket path: " << socket_address_.sun_path << endl;
-
-    //AF_UNIX is to be used for communication between sockets on the same host system
     socket_file_descriptor_ = socket(socket_address_.sun_family, SOCK_STREAM, 0);
     if (socket_file_descriptor_ < 0) {
         error("ERROR opening socket");
@@ -47,17 +46,17 @@ int UnixDomainStreamSocket::WriteToSocket(const char *msg, int new_socket_file_d
     return 0;
 }
 
+//TODO pass a buffer as an argument into this function rather than using some class/"global" one
 //Read from the socket specified by the sfd
-int UnixDomainStreamSocket::ReadFromSocket(int new_socket_file_descriptor) {
+int UnixDomainStreamSocket::ReadFromSocket(int new_socket_file_descriptor, int buffer_capacity) {
     ResetBuffer();
 
-    n_ = read(new_socket_file_descriptor, buffer_, 255);
+    n_ = read(new_socket_file_descriptor, buffer_, buffer_capacity);
 
     if (n_ < 0) {
         error("ERROR reading from socket");
-        return 1;
+        return 0;
     }
-    printf("Here is the message: %s \n", buffer_);
     return HandleMessage(buffer_);
 }
 
