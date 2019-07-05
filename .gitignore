@@ -38,7 +38,6 @@ Source/source/out/*
 Source/source/CMakeFiles/*
 
 
-
 # CMake files
 *.cmake
 Source/source/CMakeCache.txt
