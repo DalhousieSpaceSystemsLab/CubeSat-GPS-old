@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <string>
 #include <cstring>
 #include <vector>
 #include "include/minmea.h"
@@ -13,6 +12,8 @@
 #include "GPS_Data_Types.h"
 #include <fstream>
 #define INDENT_SPACES "  "
+
+#include "SanityCheck.h" // Only needed for testing
 
 using namespace std;
 struct gps_data {
@@ -33,10 +34,4 @@ bool poll(string *message);
 gps_data decode(string raw);
 bool send_message(gps_data decoded_data);
 
-// testing-only declarations follow, to be removed once we have GPS hardware interface
-ifstream *nmea_datafile = NULL;
-string nmea_filename = "nmea01.txt";
 
-bool read_nmea_from_file(string *data);
-void close_nmea_file();
-void open_nmea_file(string fn);

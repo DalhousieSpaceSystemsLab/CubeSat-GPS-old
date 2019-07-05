@@ -16,10 +16,11 @@ bool init_gps() {
 
 //polls the GPS, gets data if turned on
 bool poll(string *message) {
-    if (gpsOn) {
+    if (init_gps()) {
         cout << "GPS on" << endl;
+        return read_nmea_from_file(message);
     }
-    return read_nmea_from_file(message);
+    return false;
 }
 
 //send in a NMEA string, get organized gps_data
@@ -89,48 +90,6 @@ bool send_message(gps_data decoded_data) {
     return true;
 }
 
-// dummy method that reads static data directly from a file, emulating string data to be returned by GPS hardware
-bool read_nmea_from_file(string *data) {
-    string nmea_paragraph("");
-    string line;
-    
-    open_nmea_file(nmea_filename);
-    
-    if(nmea_datafile->is_open()) {
-        //cout << "\tData file opened, reading three lines" << endl;
-        for(int i=0; i<3; i++) {
-            if(getline(*nmea_datafile, line)) {
-                nmea_paragraph += line.substr(0, line.length()-1) + "\n";  // strip \lf and (re-)add \n
-            } else {
-                cout << INDENT_SPACES << "No more lines, closing data file" << endl;
-                nmea_datafile->close();
-                break;
-            }
-        }
-    } else {
-        cout << "Unable to open file: '" << nmea_filename << "'" << endl;
-    }
-    *data = nmea_paragraph;
-
-    return (nmea_paragraph.length() > 0);
-}
-
-// dummy helper method for reading static data
-void close_nmea_file() {
-    if(nmea_datafile) {
-        nmea_datafile->close();
-        nmea_datafile = NULL;
-    }
-}
-
-// dummy helper method for reading static data
-void open_nmea_file(string fn) {
-    if(!nmea_datafile) {
-        //will need to be set per build environment. This is set for "build" directory
-        nmea_datafile = new ifstream("../source/resources/nmea_data/" + fn);
-        cout << INDENT_SPACES << "Reading from data file " + fn << endl;
-    }
-}
 
 
 int main() {
