@@ -38,8 +38,15 @@ Source/source/out/*
 Source/source/CMakeFiles/*
 
 
-
 # CMake files
 *.cmake
-Source/source/CMakeCache.txt
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
 
