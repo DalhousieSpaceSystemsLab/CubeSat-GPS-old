@@ -2,6 +2,8 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <chrono>
+#include <thread>
 #include "minmea.h"
 
 //Gathered from https://github.com/AndrewWay/cubesat/tree/develop on June 25th, 2019
@@ -20,13 +22,18 @@ struct gps_data {
     float longitude;
     float altitude;
     float height;
+	int fix_quality;
+	static int count; //used for testing data, should be deleted
 };
 bool gpsOn;
+int gps_data::count = 0; //used for testing data, should be deleted
 
 int main();
 bool init_gps();
 string poll();
 gps_data decode(string raw);
+bool check_gps_data(gps_data data);
+gps_data persist();
 string get_message();
 bool send_message(gps_data decoded_data);
 vector<string> read_nmea_from_file();

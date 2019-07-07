@@ -23,7 +23,7 @@ string poll() {
 	if (gpsOn) {
 		return get_message();
 	}
-	return NULL;
+	return "";
 }
 
 //send in a NMEA string, get organized gps_data
@@ -37,18 +37,43 @@ gps_data decode(string raw) {
 	if (parse != NULL) {
 		while (getline(ss, to, '\n')) {
 			string sentence = to;
-			if (minmea_parse_gga(&ggaFrame, sentence.c_str())) {
+			if (minmea_parse_gga(&ggaFrame, sentence.c_str()) && minmea_check(sentence.c_str(), false)) {
 				data.altitude = minmea_tofloat(&ggaFrame.altitude);
 				data.latitude = minmea_tocoord(&ggaFrame.latitude);
 				data.longitude = minmea_tocoord(&ggaFrame.longitude);
 				data.height = minmea_tofloat(&ggaFrame.height);
 				data.time_stamp = toStringTime(&ggaFrame.time);
+				data.fix_quality = ggaFrame.fix_quality;
 			}
 		}
 	}
-	printf("time: %s\naltitude: %f\n(%f, %f)\nheight: %f\n\n",
-	data.time_stamp.c_str(), data.altitude, data.latitude, data.longitude, data.height);
+	printf("time: %s\naltitude: %f\n(latitude: %f, longitude: %f)\nheight: %f\nfix quality: %i\n\n",
+	data.time_stamp.c_str(), data.altitude, data.latitude, data.longitude, data.height, data.fix_quality);
 	
+	return data;
+}
+
+bool check_gps_data(gps_data data) {
+	if (data.fix_quality == 0 ||
+		isnan(data.altitude) || isnan(data.height) ||
+		isnan(data.latitude) || data.latitude < -90 || data.latitude > 90 ||
+		isnan(data.longitude) || data.longitude < -180 || data.longitude > 180
+		) {
+		return false;
+	}
+	return true;
+}
+
+gps_data persist() {
+	gps_data data = decode(poll());
+	bool success = check_gps_data(data);
+	while (!success) {
+		cout << "\n" << "INSUFFICIENT GPS DATA: RETRYING IN 5 SECONDS..." << "\n\n";
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+		data = decode(poll());
+		success = check_gps_data(data);
+	}
+	cout << "\n" << "SUFFICIENT GPS DATA: SENDING DATA..." << "\n\n";
 	return data;
 }
 
@@ -60,6 +85,20 @@ string toStringTime(struct minmea_time *time) {
 
 string get_message() {
 	string message; // set message
+
+	//test data
+	if (gps_data::count == 0) {
+		message = "abc";
+	}
+	else if (gps_data::count == 1) {
+		message = "$GPGGA,184911.211,4523.444,N,06055.151,W,0,12,1.0,0.0,M,0.0,M,,*7D";
+	}
+	else if (gps_data::count == 2) {
+		message = "$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47";
+	}
+	gps_data::count++;
+	cout << "\n" << message << "\n";
+
 	return message;
 }
 
@@ -130,6 +169,9 @@ vector<string> read_nmea_from_file() {
 
 //scheduler class to send messages
 int main() {
+	init_gps();
+	send_message(persist());
+	/*
 	vector<string> nmea_data;
     
 	nmea_data = read_nmea_from_file();
@@ -146,7 +188,7 @@ int main() {
 	paragraph << "$GPGGA,022454,3553.5295,N,13938.6570,E,1,05,2.2,18.3,M,39.0,M,,*7F\n";
 
 	decode(paragraph.str());
-
+	*/
 }
 
 
