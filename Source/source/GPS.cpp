@@ -9,21 +9,23 @@ GPS_Data_Types data_types;
 //checks if GPS is turned on, if not, turn on. 
 //returns TRUE if successful, FALSE otherwise
 bool init_gps() {
-	if (!gpsOn) {
-		//if can turn on gps
-		gpsOn = true;
-		return true;
-		//if cant turn on gps, return false
-	}
-	return true;
+    if (!gpsOn) {
+        //if can turn on gps
+        gpsOn = true;
+        return true;
+        //if cant turn on gps, return false
+    }
+    return true;
 }
 
+
 //polls the GPS, gets data if turned on
-string poll() {
-	if (gpsOn) {
-		return get_message();
-	}
-	return NULL;
+bool poll(string *message) {
+    if (init_gps()) {
+        cout << "GPS on" << endl;
+        return read_nmea_from_file(message);
+    }
+    return false;
 }
 
 //send in a NMEA string, get organized gps_data
@@ -56,11 +58,6 @@ string toStringTime(struct minmea_time *time) {
 	stringstream timeString;
 	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
 	return timeString.str();
-}
-
-string get_message() {
-	string message; // set message
-	return message;
 }
 
 bool send_message(gps_data decoded_data) {
@@ -109,35 +106,9 @@ bool send_message(gps_data decoded_data) {
 	return true;
 }
 
-vector<string> read_nmea_from_file() {
-	int n = NULL;
-    vector<string> nmea_data;
-    string line;
-	//will need to be set per build environment. This is set for "build" directory
-	ifstream nmea_file("../source/resources/nmea_data/nmea01.txt"); //unix
-    //ifstream nmea_file("../../../../source/resources/nmea_data/nmea01.txt"); //visual studio
-    
-    if(nmea_file.is_open()) {
-        while(getline(nmea_file, line)) {
-            nmea_data.push_back(line);
-        }
-        nmea_file.close();
-    } else {
-        cout << "Unable to open file";
-    }
-    
-    return nmea_data;
-}
 
 //scheduler class to send messages
 int main() {
-	vector<string> nmea_data;
-    
-	nmea_data = read_nmea_from_file();
-	cout << "\n" << "Read data from file: " << nmea_data[0] << "\n";
-//	send_message(decode(nmea_data[0]));
-	decode(nmea_data[0]);
-	
 	send_message(decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"));
 
 	decode("$GPGGA,012219,1237.038,N,01531.000,E,1,08,0.9,125.4,M,46.9,M,,*47\n$GPZDA,201530.00,04,07,2002,00,00*60");
@@ -147,6 +118,23 @@ int main() {
 	paragraph << "$GPGGA,022454,3553.5295,N,13938.6570,E,1,05,2.2,18.3,M,39.0,M,,*7F\n";
 
 	decode(paragraph.str());
+	
+	
+    // Set 'true' to print verification for ALL data in nmea file, assuming associated *.check file exists (see SanityCheck.h)
+    if(false) {
+        string paragraph, check_line;
+        ifstream check_file(nmea_filename + ".check");
+        
+        close_nmea_file(); // reset file stream
+        while(poll(&paragraph)) {
+            if(send_message(decode(paragraph))) {
+                if(check_file.is_open() && !getline(check_file, check_line))
+                    check_file.close();
+                else
+                    cout << INDENT_SPACES << INDENT_SPACES << "Sanity check: " + check_line << endl << endl;
+            }
+        }
+    }
 
 }
 

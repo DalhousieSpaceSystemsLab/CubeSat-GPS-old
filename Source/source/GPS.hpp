@@ -13,6 +13,8 @@
 #include <fstream>
 #define INDENT_SPACES "  "
 
+#include "SanityCheck.h" // Only needed for testing
+
 using namespace std;
 struct gps_data {
     string time_stamp;
@@ -25,9 +27,7 @@ bool gpsOn;
 
 int main();
 bool init_gps();
-string poll();
+bool poll(string *message);
 gps_data decode(string raw);
-string get_message();
 bool send_message(gps_data decoded_data);
-vector<string> read_nmea_from_file();
 string toStringTime(struct minmea_time *time);

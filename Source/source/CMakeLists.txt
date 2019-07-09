@@ -18,8 +18,10 @@ SET ( message
    ./include/message/cc/KeyValuePairContainerInterface.cc 
    ./include/message/cc/Message.cc 
    ./include/message/cc/MessageBuilder.cc 
-   ./include/message/cc/MessageBuilderInterface.cc )
+   ./include/message/cc/MessageBuilderInterface.cc  )
+set ( sanitycheck
+
+    SanityCheck.cpp )
 
 #add_executable( Loris-GPS GPS.cpp include/minmea.c ${unixdomain} ${message} )
-add_executable( Loris-GPS GPS.cpp include/minmea.c ${message} )
-
+add_executable( Loris-GPS GPS.cpp include/minmea.c ${message} ${sanitycheck} )
