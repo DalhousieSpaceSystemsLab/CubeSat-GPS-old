@@ -4,7 +4,7 @@
 #include <vector>
 #include "minmea.h"
 
-//Gathered from https://github.com/AndrewWay/cubesat/tree/develop on June 25th, 2019
+//Gathered from https://github.com/AndrewWay/cubesat/tree/develop on July 4th, 2019
 #include "Message.h"
 #include "MessageBuilder.h"
 #include "MessageSerializer.h"
