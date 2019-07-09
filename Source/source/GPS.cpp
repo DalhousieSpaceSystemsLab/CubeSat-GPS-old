@@ -72,7 +72,7 @@ bool send_message(gps_data decoded_data) {
 	container.AddKeyValuePair(data_types.longitude, decoded_data.longitude);
 	//container.AddKeyValuePair(data_types.time_stamp, decoded_data.time_stamp);
 	container.AddKeyValuePair(data_types.height, decoded_data.height);
-	container.AddKeyValuePair(0, decoded_data.altitude);
+	container.AddKeyValuePair(data_types.altitude, decoded_data.altitude);
 	
 
 	messageBuilder.SetMessageContents(container);
@@ -104,17 +104,18 @@ bool send_message(gps_data decoded_data) {
 		<< INDENT_SPACES << "LATITUDE: " << message.GetMessageContents().GetFloat(data_types.latitude) << endl
 		<< INDENT_SPACES << "LONGITUDE: " << message.GetMessageContents().GetFloat(data_types.longitude) << endl
 		<< INDENT_SPACES << "HEIGHT: " << message.GetMessageContents().GetFloat(data_types.height) << endl
-		<< INDENT_SPACES << "ALTITUDE: " << message.GetMessageContents().GetFloat(0) << endl;
+		<< INDENT_SPACES << "ALTITUDE: " << message.GetMessageContents().GetFloat(data_types.altitude) << endl;
 
 	return true;
 }
 
 vector<string> read_nmea_from_file() {
+	int n = NULL;
     vector<string> nmea_data;
     string line;
 	//will need to be set per build environment. This is set for "build" directory
-	//ifstream nmea_file("../source/resources/nmea_data/nmea01.txt"); //unix
-    ifstream nmea_file("../../../../source/resources/nmea_data/nmea01.txt"); //visual studio
+	ifstream nmea_file("../source/resources/nmea_data/nmea01.txt"); //unix
+    //ifstream nmea_file("../../../../source/resources/nmea_data/nmea01.txt"); //visual studio
     
     if(nmea_file.is_open()) {
         while(getline(nmea_file, line)) {

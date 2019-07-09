@@ -4,9 +4,33 @@
 #include "MessageSerializer.h"
 #include "MessageSenderInterface.h"
 
+#include "LorisMessenger.h"
+#include "PowerKeys.h"
+#include "Identifiers.h"
 using namespace std;
 
 int main() {
+	//Initialize the messenger
+	LorisMessenger tester;
+
+	//Add your data (arguments are: identifier for data, data value)
+	PowerKeys power_keys;//Identifier for data generated from EPS
+
+	tester.Add(power_keys.current_sensor1,0.2f);//reading from a current sensor
+	tester.Add(power_keys.battery_level,1);//battery level
+
+
+	//Look up the identifier for the recipient (in this case, its a process known as the "power repository")
+	Identifiers recipients;
+
+	//The second argument here is the ID of whoever initiated sending the message.
+	tester.Send(recipients.power_repository,0);
+
+
+}
+
+
+int old_test(){
     cout << "Starting program" << endl;
 
     MessageBuilder messageBuilder;
@@ -56,12 +80,12 @@ int main() {
 
     Message message = messageBuilder.CompleteMessage();
 
-    char msg[255] = "";
-    message.flatten(msg);
     // SerializeMessage(&message, msg);
     MessageSenderInterface ms(message.GetRecipient());
-    ms.SendMessage(msg);
+    ms.SendMessage(message);
 
+    char msg[255] = "";
+    message.flatten(msg);
     Message De_message = Message(msg);
 
     std::vector<int> keys = message.GetMessageContents().GetKeys();

@@ -18,8 +18,7 @@ SET ( message
    ./include/message/cc/KeyValuePairContainerInterface.cc 
    ./include/message/cc/Message.cc 
    ./include/message/cc/MessageBuilder.cc 
-   ./include/message/cc/MessageBuilderInterface.cc 
-   ./include/message/cc/MessagingService.cc )
+   ./include/message/cc/MessageBuilderInterface.cc )
 
 #add_executable( Loris-GPS GPS.cpp include/minmea.c ${unixdomain} ${message} )
 add_executable( Loris-GPS GPS.cpp include/minmea.c ${message} )
