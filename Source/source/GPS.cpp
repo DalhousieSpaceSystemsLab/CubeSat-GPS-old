@@ -45,6 +45,7 @@ gps_data decode(string raw) {
 				data.longitude = minmea_tocoord(&ggaFrame.longitude);
 				data.height = minmea_tofloat(&ggaFrame.height);
 				data.time_stamp = toStringTime(&ggaFrame.time);
+				data.time = encode_time_as_int(&ggaFrame.time);
 			}
 		}
 	}
@@ -56,9 +57,26 @@ gps_data decode(string raw) {
 
 string toStringTime(struct minmea_time *time) {
 	stringstream timeString;
-	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
+	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds; // TODO: cast as unsigned ints
 	return timeString.str();
 }
+
+
+int encode_time_as_int(struct minmea_time *time) {
+    unsigned int enc = 0;
+    enc = (time->hours << 27 >> 15) | (time->minutes << 26 >> 20) | (time->seconds << 26 >> 26);
+    cout << bitset<32>(time->hours) << endl;
+    cout << bitset<32>((time->hours << 27 >> 15)) << endl;
+    cout << bitset<32>(time->minutes) << endl;
+    cout << bitset<32>((time->minutes << 26 >> 20)) << endl;
+    cout << bitset<32>(time->seconds) << endl;
+    cout << bitset<32>((time->seconds << 26 >> 26)) << endl;
+    cout << bitset<32>(enc) << endl;
+    cout << time->hours << time->minutes << time->seconds << endl ;
+    cout << enc << endl << endl;
+    
+}
+
 
 bool send_message(gps_data decoded_data) {
 	MessageBuilder messageBuilder;
