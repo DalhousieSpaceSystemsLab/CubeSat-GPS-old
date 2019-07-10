@@ -120,18 +120,17 @@ int main() {
 	decode(paragraph.str());
 	
 	
-    // Set 'true' to print verification for ALL data in nmea file, assuming associated *.check file exists (see SanityCheck.h)
-    if(false) {
+    // Set 'true' to print verification for ALL data in set nmea file, assuming associated *.check file exists (see SanityCheck.h)
+    if(true) {
         string paragraph, check_line;
-        ifstream check_file(nmea_filename + ".check");
         
-        close_nmea_file(); // reset file stream
+        reset_datafile();
+        
         while(poll(&paragraph)) {
-            if(send_message(decode(paragraph))) {
-                if(check_file.is_open() && !getline(check_file, check_line))
-                    check_file.close();
-                else
-                    cout << INDENT_SPACES << INDENT_SPACES << "Sanity check: " + check_line << endl << endl;
+            if(send_message(decode(paragraph)) && read_sanitycheck_from_file(&check_line)) {
+                cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
+                cout << INDENT_SPACES << INDENT_SPACES << "Sanity check (LAT,LONG): " + check_line << endl;
+                cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl << endl;
             }
         }
     }
