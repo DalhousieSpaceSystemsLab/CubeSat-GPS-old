@@ -4,6 +4,8 @@
 #include <vector>
 #include "minmea.h"
 
+#include <bitset>  // TODO: remove this before pulling to master
+
 //Gathered from https://github.com/AndrewWay/cubesat/tree/develop on July 4th, 2019
 #include "Message.h"
 #include "MessageBuilder.h"
@@ -22,6 +24,7 @@ struct gps_data {
     float longitude;
     float altitude;
     float height;
+    int time;
 };
 bool gpsOn;
 
@@ -31,3 +34,9 @@ bool poll(string *message);
 gps_data decode(string raw);
 bool send_message(gps_data decoded_data);
 string toStringTime(struct minmea_time *time);
+
+void build_message(gps_data decoded_data, Message *message);
+
+// Testing methods
+bool test_decode(bool verbose);
+bool test_build_message(bool verbose);

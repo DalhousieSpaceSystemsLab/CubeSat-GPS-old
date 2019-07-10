@@ -6,17 +6,19 @@
 #include <string>
 #include <cstring>
 #include <fstream>
+#include <cmath>
 
 using namespace std;
 
 // testing-only declarations follow, to be removed once we have GPS hardware interface
 static ifstream *nmea_datafile = NULL;
 static ifstream *nmea_checkfile = NULL;
-static string nmea_filename = "nmea01.txt"; // alter filename as needed
+static string nmea_filename = "nmea03.txt"; // alter filename as needed
 
 bool read_nmea_from_file(string *data);
 bool read_sanitycheck_from_file(string *data);
 void reset_datafile();
+void reset_checkfile();
 void open_file(string fn, ifstream *nmea_file);
 
 ifstream* open_datafile();
@@ -24,4 +26,6 @@ ifstream* open_checkfile();
 void close_datafile();
 void close_checkfile();
 
+bool compare_floats(float a, float b);
+float parse_token_float(string line, unsigned int index=0);
 #endif

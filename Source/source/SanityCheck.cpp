@@ -13,7 +13,7 @@ bool read_nmea_from_file(string *data) {
             if(getline(*nmea_datafile, line)) {
                 nmea_paragraph += line.substr(0, line.length()-1) + "\n";  // strip trailing endline
             } else {
-                cout << "  No more lines, closing data file" << endl;
+                //cout << "  No more lines, closing data file" << endl;
                 close_datafile();
                 break;
             }
@@ -48,6 +48,11 @@ bool read_sanitycheck_from_file(string *data) {
 void reset_datafile() {
     if(nmea_datafile)
         nmea_datafile->seekg(0, nmea_datafile->beg);
+}
+
+void reset_checkfile() {
+    if(nmea_checkfile)
+        nmea_checkfile->seekg(0, nmea_checkfile->beg);
 }
 
 // helper method for reading static data
@@ -91,4 +96,25 @@ void close_checkfile() {
     if(nmea_checkfile)
         nmea_checkfile->close();
     nmea_checkfile = NULL;
+}
+
+
+bool compare_floats(float a, float b) {
+    float epsilon = 1.0e-4;
+    return std::abs(a - b) <= epsilon;
+}
+
+
+float parse_token_float(string line, unsigned int index) {
+    float token;
+    string::size_type start = 0;
+    string::size_type end;
+    
+    for(int i=0; i<=index; i++) {
+        end = line.find(",", start);
+        token = stof(line.substr(start, end-start));
+        start = end + 1;
+    }
+    
+    return token;
 }
