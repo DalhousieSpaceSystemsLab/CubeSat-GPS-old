@@ -612,5 +612,36 @@ bool minmea_parse_zda(struct minmea_sentence_zda *frame, const char *sentence)
   return true;
 }
 
+//BETH KAYLEE COMMENT ME OUT PLEASE
+int minmea_gettime(struct timespec *ts, const struct minmea_date *date, const struct minmea_time *time_)
+{
+    if (date->year == -1 || time_->hours == -1)
+        return -1;
+
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+    if (date->year < 80) {
+        tm.tm_year = 2000 + date->year - 1900;  // 2000-2079
+    } else if (date->year >= 1900) {
+        tm.tm_year = date->year - 1900; // 4 digit year, use directly
+    } else {
+        tm.tm_year = date->year;    // 1980-1999
+    }
+    tm.tm_mon = date->month - 1;
+    tm.tm_mday = date->day;
+    tm.tm_hour = time_->hours;
+    tm.tm_min = time_->minutes;
+    tm.tm_sec = time_->seconds;
+
+    time_t timestamp = timegm(&tm); /* See README.md if your system lacks timegm(). */
+    if (timestamp != (time_t)-1) {
+        ts->tv_sec = timestamp;
+        ts->tv_nsec = time_->microseconds * 1000;
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
 
 /* vim: set ts=4 sw=4 et: */

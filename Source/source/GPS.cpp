@@ -32,6 +32,7 @@ bool poll(string *message) {
 gps_data decode(string raw) { 
 	gps_data data = {};
 	minmea_sentence_gga ggaFrame;
+	minmea_sentence_zda zdaFrame;
 
 	const char* parse = raw.c_str();
 	stringstream ss(parse);
@@ -46,11 +47,14 @@ gps_data decode(string raw) {
 				data.height = minmea_tofloat(&ggaFrame.height);
 				data.time_stamp = toStringTime(&ggaFrame.time);
 			}
+			if (minmea_parse_zda(&zdaFrame, sentence.c_str)) {
+				timespec ts;
+				minmea_gettime(&ts, &zdaFrame.date, &zdaFrame.time);
+				data.time = ts.tv_sec;
+			}
 		}
 	}
-	printf("time: %s\naltitude: %f\n(%f, %f)\nheight: %f\n\n",
-	data.time_stamp.c_str(), data.altitude, data.latitude, data.longitude, data.height);
-	
+
 	return data;
 }
 
@@ -67,10 +71,10 @@ bool send_message(gps_data decoded_data) {
 	KeyValuePairContainer container;
 	container.AddKeyValuePair(data_types.latitude, decoded_data.latitude);
 	container.AddKeyValuePair(data_types.longitude, decoded_data.longitude);
-	//container.AddKeyValuePair(data_types.time_stamp, decoded_data.time_stamp);
+	if (!isnan(decoded_data.time))
+		container.AddKeyValuePair(data_types.time_stamp, decoded_data.time);
 	container.AddKeyValuePair(data_types.height, decoded_data.height);
 	container.AddKeyValuePair(data_types.altitude, decoded_data.altitude);
-	
 
 	messageBuilder.SetMessageContents(container);
 	messageBuilder.SetRecipient(1097346);
@@ -109,6 +113,7 @@ bool send_message(gps_data decoded_data) {
 
 //scheduler class to send messages
 int main() {
+	//poll()
 	send_message(decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"));
 
 	decode("$GPGGA,012219,1237.038,N,01531.000,E,1,08,0.9,125.4,M,46.9,M,,*47\n$GPZDA,201530.00,04,07,2002,00,00*60");
