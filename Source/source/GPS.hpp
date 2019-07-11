@@ -22,7 +22,7 @@ struct gps_data {
     float longitude;
     float altitude;
     float height;
-    int time;
+    unsigned int time;
 };
 bool gpsOn;
 
