@@ -4,8 +4,6 @@
 #include <vector>
 #include "minmea.h"
 
-#include <bitset> // TODO: remove this before pulling to master
-
 //Gathered from https://github.com/AndrewWay/cubesat/tree/develop on July 4th, 2019
 #include "Message.h"
 #include "MessageBuilder.h"
