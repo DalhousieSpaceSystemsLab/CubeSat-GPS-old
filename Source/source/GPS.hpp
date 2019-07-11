@@ -34,4 +34,5 @@ bool poll(string *message);
 gps_data decode(string raw);
 bool send_message(gps_data decoded_data);
 string toStringTime(struct minmea_time *time);
-int encode_time_as_int(struct minmea_time *time);
+unsigned int encode_time_as_int(struct minmea_time *time);
+struct minmea_time decode_time_from_int(unsigned int time_int);

@@ -49,32 +49,51 @@ gps_data decode(string raw) {
 			}
 		}
 	}
-	printf("time: %s\naltitude: %f\n(%f, %f)\nheight: %f\n\n",
-	data.time_stamp.c_str(), data.altitude, data.latitude, data.longitude, data.height);
+	struct minmea_time decoded_time = decode_time_from_int(data.time);
+	printf("time: %s\nenc_time: %s\naltitude: %f\n(%f, %f)\nheight: %f\n\n",
+	data.time_stamp.c_str(), toStringTime(&decoded_time).c_str(), data.altitude, data.latitude, data.longitude, data.height);
 	
 	return data;
 }
 
 string toStringTime(struct minmea_time *time) {
 	stringstream timeString;
-	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds; // TODO: cast as unsigned ints
+	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
 	return timeString.str();
 }
 
 
-int encode_time_as_int(struct minmea_time *time) {
+unsigned int encode_time_as_int(struct minmea_time *time) {
+    unsigned int BITS = 32;
+    unsigned int H_BITS = 5;
+    unsigned int M_BITS = 6;
+    unsigned int S_BITS = 6;
     unsigned int enc = 0;
-    enc = (time->hours << 27 >> 15) | (time->minutes << 26 >> 20) | (time->seconds << 26 >> 26);
-    cout << bitset<32>(time->hours) << endl;
-    cout << bitset<32>((time->hours << 27 >> 15)) << endl;
-    cout << bitset<32>(time->minutes) << endl;
-    cout << bitset<32>((time->minutes << 26 >> 20)) << endl;
-    cout << bitset<32>(time->seconds) << endl;
-    cout << bitset<32>((time->seconds << 26 >> 26)) << endl;
-    cout << bitset<32>(enc) << endl;
-    cout << time->hours << time->minutes << time->seconds << endl ;
-    cout << enc << endl << endl;
+    unsigned int hours = (unsigned int)(time->hours);
+    unsigned int minutes = (unsigned int)(time->minutes);
+    unsigned int seconds = (unsigned int)(time->seconds);
     
+    enc = enc | hours << BITS - H_BITS >> BITS - H_BITS - M_BITS - S_BITS;
+    enc = enc | minutes << BITS - M_BITS >> BITS - M_BITS - S_BITS;
+    enc = enc | seconds << BITS - S_BITS >> BITS - S_BITS;
+    
+    return enc;
+}
+
+
+struct minmea_time decode_time_from_int(unsigned int time_int) {
+    unsigned int hours, minutes, seconds;
+    unsigned int BITS = 32;
+    unsigned int H_BITS = 5;
+    unsigned int M_BITS = 6;
+    unsigned int S_BITS = 6;
+    struct minmea_time time = {};
+    
+    time.seconds = time_int << BITS - S_BITS >> BITS - S_BITS;
+    time.minutes = time_int << BITS - M_BITS - S_BITS >> BITS - M_BITS;
+    time.hours = time_int << BITS - H_BITS - M_BITS - S_BITS >> BITS - H_BITS;
+    
+    return time;
 }
 
 
