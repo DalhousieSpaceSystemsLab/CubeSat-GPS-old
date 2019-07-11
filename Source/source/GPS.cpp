@@ -125,56 +125,44 @@ int main() {
 	decode(paragraph.str());
 	
 	
-	// Beginning of general sanity checking:
-	string SEPARATOR = "== - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - ==";
-	
-	cout << endl << SEPARATOR << endl;
-	
-	bool success;
-	
-	success = test_decode(false);
-	cout << INDENT_SPACES << "Decode tests:  ";
-	if(success)
-	    cout << "PASSED";
+
+
+	// Beginning of general sanity checking: assumes associated *.check file exists (see SanityCheck.h)
+
+    bool success;
+    string SEPARATOR = "== - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - = - ==";
+    
+    cout << endl << SEPARATOR << endl;
+    
+    success = test_decode(false);
+    cout << INDENT_SPACES << "Decode tests:  ";
+    if(success)
+        cout << "PASSED";
     else
         cout << "FAILED";
     cout << endl << SEPARATOR << endl;
     
-    
-	success = test_build_message(false);
-	cout << INDENT_SPACES << "Build message tests:  ";
-	if(success)
-	    cout << "PASSED";
+    success = test_build_message(false);
+    cout << INDENT_SPACES << "Build message tests:  ";
+    if(success)
+        cout << "PASSED";
     else
         cout << "FAILED";
     cout << endl;
     
-	cout << SEPARATOR << endl << endl;
-    
-    // Set 'true' to print verification for ALL data in set nmea file, assuming associated *.check file exists (see SanityCheck.h)
-    if(false) {
-        string paragraph, check_line;
-        
-        reset_datafile();
-        
-        while(poll(&paragraph)) {
-            if(send_message(decode(paragraph)) && read_sanitycheck_from_file(&check_line)) {
-                cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
-                cout << INDENT_SPACES << INDENT_SPACES << "Sanity check (LAT,LONG): " + check_line << endl;
-                cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl << endl;
-            }
-        }
-    }
+    cout << SEPARATOR << endl << endl;
 
 }
 
 
+
+// test that decode() works as expected
 bool test_decode(bool verbose) {
     string paragraph, check_line;
     gps_data decoded_data;
     float lat, lon;
     bool success = true;
-    bool line_success;
+    bool line_success = false;
     
     reset_datafile();
     reset_checkfile();
@@ -192,7 +180,7 @@ bool test_decode(bool verbose) {
                 cout << INDENT_SPACES << INDENT_SPACES << "Sanity check (LAT,LONG): " + check_line << endl;
                 cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl << endl;
             }
-            // stof(check_line.substr(0, check_line.find(",")))
+            
             line_success = compare_floats(lat, parse_token_float(check_line, 0)) && compare_floats(lon, parse_token_float(check_line, 1));
             if(verbose) {
                 if(line_success)
@@ -200,22 +188,22 @@ bool test_decode(bool verbose) {
                 else
                     cout << INDENT_SPACES << " ^ FAILED ^ " << endl << endl;
             }
-            
-            success = success && line_success;
         }
+        
+        success = success && line_success;
     }
     return success;
 }
 
 
-
+// test that build_message() works as expected
 bool test_build_message(bool verbose) {
     string paragraph, check_line;
     gps_data decoded_data;
     Message message;
     float lat, lon;
     bool success = true;
-    bool line_success;
+    bool line_success = false;
     
     reset_datafile();
     reset_checkfile();
@@ -247,9 +235,9 @@ bool test_build_message(bool verbose) {
                 else
                     cout << INDENT_SPACES << "^ FAILED ^ " << endl << endl;
             }
-            
-            success = success && line_success;
         }
+            
+        success = success && line_success;
     }
     
     return success;

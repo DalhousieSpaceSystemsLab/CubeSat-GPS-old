@@ -1,7 +1,6 @@
 #ifndef sanitycheck_h
 #define sanitycheck_h
 
-
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -27,5 +26,5 @@ void close_datafile();
 void close_checkfile();
 
 bool compare_floats(float a, float b);
-float parse_token_float(string line, unsigned int index=0);
+float parse_token_float(string line, unsigned int index);
 #endif
