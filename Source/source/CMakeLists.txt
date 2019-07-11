@@ -21,7 +21,8 @@ SET ( message
    ./include/message/cc/MessageBuilderInterface.cc  )
 set ( sanitycheck
 
-    SanityCheck.cpp )
+    SanityCheck.cpp
+    Testing.cpp )
 
 #add_executable( Loris-GPS GPS.cpp include/minmea.c ${unixdomain} ${message} )
-add_executable( Loris-GPS GPS.cpp include/minmea.c ${message} ${sanitycheck} )
+add_executable( Loris-GPS Main.cpp GPS.cpp include/minmea.c ${message} ${sanitycheck} )

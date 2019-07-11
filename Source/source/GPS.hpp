@@ -1,8 +1,14 @@
+#ifndef GPS_H
+#define GPS_H
+
 #include <iostream>
 #include <string>
 #include <cstring>
 #include <vector>
+
 #include "minmea.h"
+#include "SanityCheck.h"
+//#include "include/minmea.h"
 
 //Gathered from https://github.com/AndrewWay/cubesat/tree/develop on July 4th, 2019
 #include "Message.h"
@@ -11,9 +17,10 @@
 //#include "MessageSenderInterface.h"
 #include "GPS_Data_Types.h"
 #include <fstream>
+#include <sstream>
 #define INDENT_SPACES "  "
 
-#include "SanityCheck.h" // Only needed for testing
+static GPS_Data_Types data_types;
 
 using namespace std;
 struct gps_data {
@@ -24,9 +31,8 @@ struct gps_data {
     float height;
     int time;
 };
-bool gpsOn;
+static bool gpsOn;
 
-int main();
 bool init_gps();
 bool poll(string *message);
 gps_data decode(string raw);
@@ -35,6 +41,4 @@ string toStringTime(struct minmea_time *time);
 
 void build_message(gps_data decoded_data, Message *message);
 
-// Testing methods
-bool test_decode(bool verbose);
-bool test_build_message(bool verbose);
+#endif

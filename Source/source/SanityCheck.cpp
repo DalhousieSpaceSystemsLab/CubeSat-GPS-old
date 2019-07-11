@@ -98,23 +98,3 @@ void close_checkfile() {
     nmea_checkfile = NULL;
 }
 
-
-bool compare_floats(float a, float b) {
-    float epsilon = 1.0e-4;
-    return std::abs(a - b) <= epsilon;
-}
-
-
-float parse_token_float(string line, unsigned int index) {
-    float token;
-    string::size_type start = 0;
-    string::size_type end;
-    
-    for(int i=0; i<=index; i++) {
-        end = line.find(",", start);
-        token = stof(line.substr(start, end-start));
-        start = end + 1;
-    }
-    
-    return token;
-}

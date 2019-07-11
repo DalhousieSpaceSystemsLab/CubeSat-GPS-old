@@ -25,6 +25,4 @@ ifstream* open_checkfile();
 void close_datafile();
 void close_checkfile();
 
-bool compare_floats(float a, float b);
-float parse_token_float(string line, unsigned int index);
 #endif
