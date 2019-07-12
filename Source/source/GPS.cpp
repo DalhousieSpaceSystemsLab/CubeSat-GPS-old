@@ -73,9 +73,9 @@ unsigned int encode_time_as_int(struct minmea_time *time) {
     unsigned int minutes = (unsigned int)(time->minutes);
     unsigned int seconds = (unsigned int)(time->seconds);
     
-    enc = enc | hours << BITS - H_BITS >> BITS - H_BITS - M_BITS - S_BITS;
-    enc = enc | minutes << BITS - M_BITS >> BITS - M_BITS - S_BITS;
-    enc = enc | seconds << BITS - S_BITS >> BITS - S_BITS;
+    enc = enc | (hours << (BITS - H_BITS) >> (BITS - H_BITS - M_BITS - S_BITS));
+    enc = enc | (minutes << (BITS - M_BITS) >> (BITS - M_BITS - S_BITS));
+    enc = enc | (seconds << (BITS - S_BITS) >> (BITS - S_BITS));
     
     return enc;
 }
@@ -89,9 +89,9 @@ struct minmea_time decode_time_from_int(unsigned int time_int) {
     unsigned int S_BITS = 6;
     struct minmea_time time = {};
     
-    time.seconds = time_int << BITS - S_BITS >> BITS - S_BITS;
-    time.minutes = time_int << BITS - M_BITS - S_BITS >> BITS - M_BITS;
-    time.hours = time_int << BITS - H_BITS - M_BITS - S_BITS >> BITS - H_BITS;
+    time.seconds = time_int << (BITS - S_BITS) >> (BITS - S_BITS);
+    time.minutes = time_int << (BITS - M_BITS - S_BITS) >> (BITS - M_BITS);
+    time.hours = time_int << (BITS - H_BITS - M_BITS - S_BITS) >> (BITS - H_BITS);
     
     return time;
 }
