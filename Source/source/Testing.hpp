@@ -6,7 +6,7 @@
 
 
 bool compare_floats(float a, float b);
-float parse_token_float(string line, unsigned int index);
+float parse_token_float(string line, string separator, unsigned int index);
 
 bool test_decode(bool verbose);
 bool test_build_message(bool verbose);

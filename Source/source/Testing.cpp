@@ -10,13 +10,13 @@ bool compare_floats(float a, float b) {
 }
 
 
-float parse_token_float(string line, unsigned int index) {
+float parse_token_float(string line, string separator, unsigned int index) {
     float token;
     string::size_type start = 0;
     string::size_type end;
     
     for(int i=0; i<=index; i++) {
-        end = line.find(",", start);
+        end = line.find(separator, start);
         token = stof(line.substr(start, end-start));
         start = end + 1;
     }
@@ -30,7 +30,7 @@ float parse_token_float(string line, unsigned int index) {
 bool test_decode(bool verbose) {
     string paragraph, check_line;
     gps_data decoded_data;
-    float lat, lon;
+    float lat, lon, alt, hgt;
     bool success = true;
     bool line_success = false;
     
@@ -42,16 +42,20 @@ bool test_decode(bool verbose) {
         if(read_sanitycheck_from_file(&check_line)) {
             lat = decoded_data.latitude;
             lon = decoded_data.longitude;
+            alt = decoded_data.altitude;
+            hgt = decoded_data.height;  // geoid height
             
             if(verbose) {
                 cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
                 cout << INDENT_SPACES << INDENT_SPACES << "Decoded      (LAT,LONG): " << lat << ", " << lon << endl;
+                cout << INDENT_SPACES << INDENT_SPACES << "Decoded      (ALT,HEIGHT): " << alt << ", " << hgt << endl;
                 cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
-                cout << INDENT_SPACES << INDENT_SPACES << "Sanity check (LAT,LONG): " + check_line << endl;
+                cout << INDENT_SPACES << INDENT_SPACES << "Sanity check (LAT,LONG,TIME,ALT,HEIGHT): " + check_line << endl;
                 cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl << endl;
             }
             
-            line_success = compare_floats(lat, parse_token_float(check_line, 0)) && compare_floats(lon, parse_token_float(check_line, 1));
+            line_success = compare_floats(lat, parse_token_float(check_line, ",", 0)) && compare_floats(lon, parse_token_float(check_line, ",", 1)); // lat and long
+            line_success = line_success && compare_floats(alt, parse_token_float(check_line, ",", 3)) && compare_floats(hgt, parse_token_float(check_line, ",", 4)); // alt and height
             if(verbose) {
                 if(line_success)
                     cout << INDENT_SPACES << " ^ Passed ^ " << endl << endl;
@@ -71,7 +75,7 @@ bool test_build_message(bool verbose) {
     string paragraph, check_line;
     gps_data decoded_data;
     Message message;
-    float lat, lon;
+    float lat, lon, alt, hgt;
     bool success = true;
     bool line_success = false;
     
@@ -93,12 +97,14 @@ bool test_build_message(bool verbose) {
             if(verbose) {
                 cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
                 cout << INDENT_SPACES << INDENT_SPACES << "Built Message (LAT,LONG): " << lat << ", " << lon << endl;
+                cout << INDENT_SPACES << INDENT_SPACES << "Built Message (ALT,HEIGHT): " << alt << ", " << hgt << endl;
                 cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
-                cout << INDENT_SPACES << INDENT_SPACES << "Sanity check  (LAT,LONG): " + check_line << endl;
+                cout << INDENT_SPACES << INDENT_SPACES << "Sanity check  (LAT,LONG,TIME,ALT,HEIGHT): " + check_line << endl;
                 cout << INDENT_SPACES << " - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
             }
             
-            line_success = compare_floats(lat, parse_token_float(check_line, 0)) && compare_floats(lon, parse_token_float(check_line, 1));
+            line_success = compare_floats(lat, parse_token_float(check_line, ",", 0)) && compare_floats(lon, parse_token_float(check_line, ",", 1)); // lat and long
+            line_success = line_success && compare_floats(alt, parse_token_float(check_line, ",", 3)) && compare_floats(hgt, parse_token_float(check_line, ",", 4)); // alt and height
             if(verbose) {
                 if(line_success)
                     cout << INDENT_SPACES << "^ Passed ^ " << endl << endl;
