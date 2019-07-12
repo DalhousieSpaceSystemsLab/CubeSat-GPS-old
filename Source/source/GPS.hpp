@@ -8,12 +8,12 @@
 
 #include "minmea.h"
 #include "SanityCheck.h"
+#include "Testing.hpp"
 //#include "include/minmea.h"
 
 //Gathered from https://github.com/AndrewWay/cubesat/tree/develop on July 4th, 2019
 #include "Message.h"
 #include "MessageBuilder.h"
-#include "MessageSerializer.h"
 //#include "MessageSenderInterface.h"
 #include "GPS_Data_Types.h"
 #include <fstream>
@@ -40,5 +40,5 @@ bool send_message(gps_data decoded_data);
 string toStringTime(struct minmea_time *time);
 
 void build_message(gps_data decoded_data, Message *message);
-
+int main();
 #endif

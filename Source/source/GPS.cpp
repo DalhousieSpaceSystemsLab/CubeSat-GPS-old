@@ -107,4 +107,22 @@ bool send_message(gps_data decoded_data) {
 }
 
 
+//scheduler class to send messages
+int main() {
+	send_message(decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"));
 
+	decode("$GPGGA,012219,1237.038,N,01531.000,E,1,08,0.9,125.4,M,46.9,M,,*47\n$GPZDA,201530.00,04,07,2002,00,00*60");
+	stringstream paragraph;
+	paragraph << "$GPGGA,023042,4007.3837,N,12102.89684,W,1,04,2.3,507.3,M,-24.1,M,,*75\n";
+	paragraph << "$GPGGA,023042,3907.3837,N,12102.4684,W,1,04,2.3,507.3,M,-24.1,M,,*75\n";
+	paragraph << "$GPGGA,022454,3553.5295,N,13938.6570,E,1,05,2.2,18.3,M,39.0,M,,*7F\n";
+
+	decode(paragraph.str());
+	
+	
+	// Beginning of general sanity checking: assumes associated *.check file exists (see SanityCheck.h)
+    print_test_summary("Decode tests", test_decode(false));  // pass 'true' to enable verbose testing
+    print_test_summary("Build message tests", test_build_message(false));  // pass 'true' to enable verbose testing
+    
+    return 0;
+}
