@@ -49,7 +49,7 @@ gps_data decode(string raw) {
 			}
 		}
 	}
-	struct minmea_time decoded_time = decode_time_from_int(data.time);
+	struct gps_time decoded_time = decode_time_from_int(data.time);
 	printf("time: %s\nenc_time: %s\naltitude: %f\n(%f, %f)\nheight: %f\n\n",
 	data.time_stamp.c_str(), toStringTime(&decoded_time).c_str(), data.altitude, data.latitude, data.longitude, data.height);
 	
@@ -57,6 +57,12 @@ gps_data decode(string raw) {
 }
 
 string toStringTime(struct minmea_time *time) {
+	stringstream timeString;
+	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
+	return timeString.str();
+}
+
+string toStringTime(struct gps_time *time) {
 	stringstream timeString;
 	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
 	return timeString.str();
@@ -81,13 +87,13 @@ unsigned int encode_time_as_int(struct minmea_time *time) {
 }
 
 
-struct minmea_time decode_time_from_int(unsigned int time_int) {
+struct gps_time decode_time_from_int(unsigned int time_int) {
     unsigned int hours, minutes, seconds;
     unsigned int BITS = 32;
     unsigned int H_BITS = 5;
     unsigned int M_BITS = 6;
     unsigned int S_BITS = 6;
-    struct minmea_time time = {};
+    struct gps_time time = {};
     
     time.seconds = time_int << (BITS - S_BITS) >> (BITS - S_BITS);
     time.minutes = time_int << (BITS - M_BITS - S_BITS) >> (BITS - M_BITS);
