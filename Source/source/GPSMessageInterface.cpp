@@ -1,5 +1,8 @@
 #include "GPSMessageInterface.hpp"
 GPS_Data_Types data_types;
+chrono::system_clock::time_point last_poll = chrono::system_clock::now();
+chrono::system_clock::time_point last_empty_poll = chrono::system_clock::now();
+MessageBuilder builder;
 
 // code for sending out and recieving messages from the OBC
 // note: this class can absolutely be mocked out for unit tests
@@ -12,7 +15,7 @@ bool send_message(gps_data* decoded_data) {
 	container.AddKeyValuePair(data_types.latitude, decoded_data -> latitude);
 	container.AddKeyValuePair(data_types.longitude, decoded_data -> longitude);
 	if (!isnan(decoded_data -> time))
-		container.AddKeyValuePair(data_types.time, decoded_data -> time);
+		container.AddKeyValuePair(data_types.time, (int) decoded_data -> time);
 	container.AddKeyValuePair(data_types.height, decoded_data -> height);
 	container.AddKeyValuePair(data_types.altitude, decoded_data -> altitude);
 
@@ -51,23 +54,45 @@ bool send_message(gps_data* decoded_data) {
 }
 
 
-bool get_message(KeyValuePairContainer* message){
+Message get_message(){
+	builder.StartMessage();
+	KeyValuePairContainer container;
+
 	status_codes codes;
-	
+	Identifiers identifiers;
 	//every 2 minutes, send a REQUEST message 
-	if (2 - chrono::duration_cast<chrono::minutes>(chrono::system_clock::now() - last_poll).count() != 0) {
+	if (2 - chrono::duration_cast<chrono::minutes>(chrono::system_clock::now() - last_poll).count() == 0) {
 		cout << "TEST: Sending REQUEST message...";
-		message -> AddKeyValuePair(0, codes.request);
-	}
-	//every 30 seconds, send nothing
-	else if (30 - chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - last_empty_poll).count() != 0) {
-		last_empty_poll = chrono::system_clock::now();
-		return false;
-	}
-	else {
-		cout << "TEST: Sending STANDBY message....";
-    	message -> AddKeyValuePair(0, codes.standby);
+		container.AddKeyValuePair(0, codes.request);
 		last_poll = chrono::system_clock::now();
 	}
-	return true;
+	//every 30 seconds, send nothing
+	else if (30 - chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - last_empty_poll).count() == 0) {
+		cout << "TEST: Sending EMPTY message..."
+		last_empty_poll = chrono::system_clock::now();
+	}
+	else {
+		cout << "TEST: Sending STANDBY message...";
+    	container.AddKeyValuePair(0, codes.standby);
+	}
+
+	builder.SetMessageContents(container);
+	builder.SetRecipient(identifiers.gps_subsystem);
+	builder.SetSender(identifiers.gps_repository);
+	return builder.CompleteMessage();
+}
+
+gps_time decode_time_from_int(unsigned int time_int) {
+    unsigned int hours, minutes, seconds;
+    unsigned int BITS = 32;
+    unsigned int H_BITS = 5;
+    unsigned int M_BITS = 6;
+    unsigned int S_BITS = 6;
+    struct gps_time time = {};
+    
+    time.seconds = time_int << (BITS - S_BITS) >> (BITS - S_BITS);
+    time.minutes = time_int << (BITS - M_BITS - S_BITS) >> (BITS - M_BITS);
+    time.hours = time_int << (BITS - H_BITS - M_BITS - S_BITS) >> (BITS - H_BITS);
+    
+    return time;
 }

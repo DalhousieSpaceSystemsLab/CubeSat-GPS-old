@@ -21,6 +21,14 @@ struct gps_data {
     float longitude;
     float altitude;
     float height;
-    float time;
+    unsigned int time;
 };
+
+struct gps_time {
+    unsigned int hours;
+    unsigned int minutes;
+    unsigned int seconds;
+    unsigned int microseconds;
+};
+
 #endif

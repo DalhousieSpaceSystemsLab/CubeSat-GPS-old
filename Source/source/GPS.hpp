@@ -24,7 +24,7 @@
 
 using namespace std;
 
-bool gpsOn;
+bool gpsOn = false;
 
 int main(int argc, char *argv[]);
 int gps_loop();
@@ -32,6 +32,7 @@ void test();
 bool init_gps();
 bool poll(string *message);
 void decode(string raw);
-string toStringTime(struct minmea_time *time);
+string toStringTime(struct gps_time *time);
+unsigned int encode_time_as_int(struct minmea_time *time);
 
 #endif

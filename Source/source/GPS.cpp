@@ -43,12 +43,7 @@ void decode(string raw) {
 				data.latitude = minmea_tocoord(&ggaFrame.latitude);
 				data.longitude = minmea_tocoord(&ggaFrame.longitude);
 				data.height = minmea_tofloat(&ggaFrame.height);
-				data.time = toStringTime(&ggaFrame.time);
-			}
-			if (minmea_parse_zda(&zdaFrame, sentence.c_str())) {
-				timespec ts;
-				minmea_gettime(&ts, &zdaFrame.date, &zdaFrame.time);
-				data.time = ts.tv_sec;
+				data.time = encode_time_as_int(&ggaFrame.time);
 			}
 		}
 	}
@@ -58,6 +53,30 @@ string toStringTime(struct minmea_time *time) {
 	stringstream timeString;
 	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
 	return timeString.str();
+}
+
+string toStringTime(struct gps_time *time) {
+	stringstream timeString;
+	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
+	return timeString.str();
+}
+
+
+unsigned int encode_time_as_int(struct minmea_time *time) {
+    unsigned int BITS = 32;
+    unsigned int H_BITS = 5;
+    unsigned int M_BITS = 6;
+    unsigned int S_BITS = 6;
+    unsigned int enc = 0;
+    unsigned int hours = (unsigned int)(time->hours);
+    unsigned int minutes = (unsigned int)(time->minutes);
+    unsigned int seconds = (unsigned int)(time->seconds);
+    
+    enc = enc | (hours << (BITS - H_BITS) >> (BITS - H_BITS - M_BITS - S_BITS));
+    enc = enc | (minutes << (BITS - M_BITS) >> (BITS - M_BITS - S_BITS));
+    enc = enc | (seconds << (BITS - S_BITS) >> (BITS - S_BITS));
+    
+    return enc;
 }
 
 //scheduler class to send messages
@@ -107,10 +126,10 @@ int gps_loop() {
 		close_nmea_file();
 		return 0;
 	}
-	cout << "GPS Polled!";
-	cout << "Decoding NMEA Data";
+	cout << "GPS Polled!" << endl;
+	cout << "Decoding NMEA Data" << endl;
 	decode(raw_nmea);
-	cout << "Sending results...";
+	cout << "Sending results..." << endl;
 	if (!send_message(&data)) {
 		cout << "MESSAGE FAILED TO SEND" << endl;
 		return 0;
@@ -126,24 +145,25 @@ int main(int argc, char *argv[]) {
 	}
 	status_codes codes;
 	chrono::system_clock::time_point last_poll = chrono::system_clock::now();
-	KeyValuePairContainer message;
+	Message message;
 	string raw_nmea;
 	bool messageSuccess = false;
 
 	while (true) {
 		messageSuccess = false;
-		if (get_message(&message)) {
+		message = get_message();
+		if (message.GetMessageContents().GetAmountofIntPairs() != 0) {
 			cout << endl << "== Received status: " << message.GetInt(0) << "! ==" << endl << endl;
 			if (message.GetInt(0) == codes.request) {
 				cout << "REQUEST RECEIVED - Initiating GPS Sequence" << endl;;
 				messageSuccess = true;
 				
 				if (gps_loop()) {
-					cout << "SUCCESS" << endl;
+					cout << "SUCCESS" << endl << endl;
 					last_poll = chrono::system_clock::now();
 				}
 				else
-					cout << "FAILURE" << endl;
+					cout << "FAILURE" << endl << endl;
 			}
 			else if (message.GetInt(0) == codes.standby) {
 				cout << "STANDBY RECEIVED - Awaiting further instruction" << endl;
@@ -175,7 +195,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			else {
-				cout << "Sleeping for " << timediff << " more minutes..." << endl;
+				cout << "Sleeping for " << timediff << " more minutes..." << endl << endl;
 			}
 		}
 

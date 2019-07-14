@@ -9,12 +9,12 @@
 #include <iostream>
 #include <math.h>
 #include <chrono>
+#include "Identifiers.h"
 
 using namespace std;
 //#include "MessageSenderInterface.h"
 
-chrono::system_clock::time_point last_poll = chrono::system_clock::now();
-chrono::system_clock::time_point last_empty_poll = chrono::system_clock::now();
 bool send_message(gps_data* decoded_data);
-bool get_message(KeyValuePairContainer* message);
+Message get_message();
+
 #endif
