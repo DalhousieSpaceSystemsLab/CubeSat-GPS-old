@@ -43,7 +43,7 @@ void decode(string raw) {
 				data.latitude = minmea_tocoord(&ggaFrame.latitude);
 				data.longitude = minmea_tocoord(&ggaFrame.longitude);
 				data.height = minmea_tofloat(&ggaFrame.height);
-				data.time_stamp = toStringTime(&ggaFrame.time);
+				data.time = toStringTime(&ggaFrame.time);
 			}
 			if (minmea_parse_zda(&zdaFrame, sentence.c_str())) {
 				timespec ts;
@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
 		test();
 		return 1;
 	}
+	status_codes codes;
 	chrono::system_clock::time_point last_poll = chrono::system_clock::now();
 	KeyValuePairContainer message;
 	string raw_nmea;
@@ -132,9 +133,11 @@ int main(int argc, char *argv[]) {
 	while (true) {
 		messageSuccess = false;
 		if (get_message(&message)) {
-			if (message.GetInt(0) == 0) {
+			cout << endl << "== Received status: " << message.GetInt(0) << "! ==" << endl << endl;
+			if (message.GetInt(0) == codes.request) {
+				cout << "REQUEST RECEIVED - Initiating GPS Sequence" << endl;;
 				messageSuccess = true;
-				cout << endl << "== Received status: " << message.GetInt(0) << "! ==" << endl << endl;
+				
 				if (gps_loop()) {
 					cout << "SUCCESS" << endl;
 					last_poll = chrono::system_clock::now();
@@ -142,15 +145,22 @@ int main(int argc, char *argv[]) {
 				else
 					cout << "FAILURE" << endl;
 			}
+			else if (message.GetInt(0) == codes.standby) {
+				cout << "STANDBY RECEIVED - Awaiting further instruction" << endl;
+			}
 			else {
 				cout << "Invalid message sent" << endl;
 				cout << "Received status: " << message.GetInt(0);
 			}
 		}
+		else {
+			cout << "EMPTY REQUEST - Awaiting further instruction" << endl;
+		}
 
 		if (!messageSuccess) {
 			this_thread::sleep_for(chrono::seconds(5));
-			int timediff = 1 - chrono::duration_cast<chrono::minutes>(chrono::system_clock::now() - last_poll).count(); //12 hours in minutes
+			//for testing, this is just 2 minutes, will be 720 (12 hours) in production
+			int timediff = 2 - chrono::duration_cast<chrono::minutes>(chrono::system_clock::now() - last_poll).count(); //12 hours in minutes
 			if (timediff == 0) {
 				cout << endl << "== Timeout elapsed == " << endl << endl;
 				cout << "Updating GPS Data..." << endl;

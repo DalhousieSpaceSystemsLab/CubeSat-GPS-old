@@ -28,4 +28,4 @@ set ( sanitycheck
     SanityCheck.cpp )
 
 #add_executable( Loris-GPS GPS.cpp include/minmea.c ${unixdomain} ${message} )
-add_executable( Loris-GPS GPS.cpp GPSMessageInterface.cc include/minmea.c ${message} ${sanitycheck} )
+add_executable( Loris-GPS GPS.cpp GPSMessageInterface.cpp include/minmea.c ${message} ${sanitycheck} )
