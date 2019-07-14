@@ -2,7 +2,6 @@
 GPS_Data_Types data_types;
 chrono::system_clock::time_point last_poll = chrono::system_clock::now();
 chrono::system_clock::time_point last_empty_poll = chrono::system_clock::now();
-MessageBuilder builder;
 
 // code for sending out and recieving messages from the OBC
 // note: this class can absolutely be mocked out for unit tests
@@ -40,7 +39,8 @@ bool send_message(gps_data* decoded_data) {
 
 	KeyValuePairContainer c = message.GetMessageContents();
 	
-	cout << "\nRECIPIENT: " << message.GetRecipient() << endl
+	cout << endl << "== BEGIN CONTENTS ==" << endl;
+	cout << endl << "RECIPIENT: " << message.GetRecipient() << endl
 		<< "SENDER: " << message.GetSender() << endl
 		<< "TIME CREATED: " << message.GetTimeCreated() << endl
 		<< "CONTENTS:" << endl
@@ -49,30 +49,31 @@ bool send_message(gps_data* decoded_data) {
 		<< INDENT_SPACES << "LONGITUDE: " << message.GetMessageContents().GetFloat(data_types.longitude) << endl
 		<< INDENT_SPACES << "HEIGHT: " << message.GetMessageContents().GetFloat(data_types.height) << endl
 		<< INDENT_SPACES << "ALTITUDE: " << message.GetMessageContents().GetFloat(data_types.altitude) << endl;
-
+	cout << endl << "== END CONTENTS ==" << endl << endl; 
 	return true;
 }
 
 
 Message get_message(){
+	MessageBuilder builder;
 	builder.StartMessage();
 	KeyValuePairContainer container;
 
 	status_codes codes;
 	Identifiers identifiers;
-	//every 2 minutes, send a REQUEST message 
-	if (2 - chrono::duration_cast<chrono::minutes>(chrono::system_clock::now() - last_poll).count() == 0) {
-		cout << "TEST: Sending REQUEST message...";
+	//every 1 minute, send a REQUEST message 
+	if (1 - chrono::duration_cast<chrono::minutes>(chrono::system_clock::now() - last_poll).count() == 0) {
+		cout << "TEST: Sending REQUEST message..." << endl;
 		container.AddKeyValuePair(0, codes.request);
 		last_poll = chrono::system_clock::now();
 	}
 	//every 30 seconds, send nothing
 	else if (30 - chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - last_empty_poll).count() == 0) {
-		cout << "TEST: Sending EMPTY message..."
+		cout << "TEST: Sending EMPTY message..." << endl;
 		last_empty_poll = chrono::system_clock::now();
 	}
 	else {
-		cout << "TEST: Sending STANDBY message...";
+		cout << "TEST: Sending STANDBY message..." << endl;
     	container.AddKeyValuePair(0, codes.standby);
 	}
 

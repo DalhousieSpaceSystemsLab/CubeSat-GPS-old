@@ -36,10 +36,8 @@ void close_nmea_file() {
 // helper method for reading static data
 void open_nmea_file(string fn) {
     if(!nmea_datafile) {
-        cout << "HERE";
         nmea_datafile = new ifstream("../../../../source/resources/nmea_data/" + fn); // visual studio
         if(!nmea_datafile->good()) {
-            cout << "HERE2";
             nmea_datafile->open("../source/resources/nmea_data/" + fn); // unix
         }
         cout << "  Reading from data file " + fn << endl;

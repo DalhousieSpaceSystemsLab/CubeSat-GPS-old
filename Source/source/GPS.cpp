@@ -139,10 +139,13 @@ int gps_loop() {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc == 2 && strcmp(argv[1], "-t")) {
+	if (argc == 2 && (strcmp(argv[1], "-t") == 0)) {
+		cout << "== TEST MODE ==" << endl;
 		test();
 		return 1;
 	}
+	cout << "== NORMAL MODE ==" << endl;
+
 	status_codes codes;
 	chrono::system_clock::time_point last_poll = chrono::system_clock::now();
 	Message message;
@@ -151,6 +154,7 @@ int main(int argc, char *argv[]) {
 
 	while (true) {
 		messageSuccess = false;
+		cout << "Checking for messages..." << endl;
 		message = get_message();
 		if (message.GetMessageContents().GetAmountofIntPairs() != 0) {
 			cout << endl << "== Received status: " << message.GetInt(0) << "! ==" << endl << endl;
@@ -159,11 +163,11 @@ int main(int argc, char *argv[]) {
 				messageSuccess = true;
 				
 				if (gps_loop()) {
-					cout << "SUCCESS" << endl << endl;
+					cout << endl << "== SUCCESS == " << endl << endl;
 					last_poll = chrono::system_clock::now();
 				}
 				else
-					cout << "FAILURE" << endl << endl;
+					cout << endl << "== FAILURE ==" << endl << endl;
 			}
 			else if (message.GetInt(0) == codes.standby) {
 				cout << "STANDBY RECEIVED - Awaiting further instruction" << endl;
