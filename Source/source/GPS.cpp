@@ -45,14 +45,12 @@ void decode(string raw) {
 				data.height = minmea_tofloat(&ggaFrame.height);
 				data.time = encode_time_as_int(&ggaFrame.time);
 			}
+			else if (minmea_parse_zda(&zdaFrame, sentence.c_str())) {
+				data.time = encode_time_as_int(&zdaFrame.time);
+				//TODO - add date information from ZDA to data struct
+			}
 		}
 	}
-}
-
-string toStringTime(struct minmea_time *time) {
-	stringstream timeString;
-	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
-	return timeString.str();
 }
 
 string toStringTime(struct gps_time *time) {
