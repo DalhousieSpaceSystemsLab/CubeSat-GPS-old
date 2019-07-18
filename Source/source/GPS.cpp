@@ -44,12 +44,13 @@ gps_data decode(string raw) {
 				data.longitude = minmea_tocoord(&ggaFrame.longitude);
 				data.height = minmea_tofloat(&ggaFrame.height);
 				data.time_stamp = toStringTime(&ggaFrame.time);
-				data.fix_quality = ggaFrame.fix_quality;
+				data.time = encode_time_as_int(&ggaFrame.time);
 			}
 		}
 	}
-	printf("time: %s\naltitude: %f\n(latitude: %f, longitude: %f)\nheight: %f\nfix quality: %i\n\n",
-	data.time_stamp.c_str(), data.altitude, data.latitude, data.longitude, data.height, data.fix_quality);
+	struct gps_time decoded_time = decode_time_from_int(data.time);
+	printf("time: %s\nenc_time: %s\naltitude: %f\n(%f, %f)\nheight: %f\n\n",
+	data.time_stamp.c_str(), toStringTime(&decoded_time).c_str(), data.altitude, data.latitude, data.longitude, data.height);
 	
 	return data;
 }
@@ -70,6 +71,47 @@ string toStringTime(struct minmea_time *time) {
 	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
 	return timeString.str();
 }
+
+string toStringTime(struct gps_time *time) {
+	stringstream timeString;
+	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
+	return timeString.str();
+}
+
+
+unsigned int encode_time_as_int(struct minmea_time *time) {
+    unsigned int BITS = 32;
+    unsigned int H_BITS = 5;
+    unsigned int M_BITS = 6;
+    unsigned int S_BITS = 6;
+    unsigned int enc = 0;
+    unsigned int hours = (unsigned int)(time->hours);
+    unsigned int minutes = (unsigned int)(time->minutes);
+    unsigned int seconds = (unsigned int)(time->seconds);
+    
+    enc = enc | (hours << (BITS - H_BITS) >> (BITS - H_BITS - M_BITS - S_BITS));
+    enc = enc | (minutes << (BITS - M_BITS) >> (BITS - M_BITS - S_BITS));
+    enc = enc | (seconds << (BITS - S_BITS) >> (BITS - S_BITS));
+    
+    return enc;
+}
+
+
+struct gps_time decode_time_from_int(unsigned int time_int) {
+    unsigned int hours, minutes, seconds;
+    unsigned int BITS = 32;
+    unsigned int H_BITS = 5;
+    unsigned int M_BITS = 6;
+    unsigned int S_BITS = 6;
+    struct gps_time time = {};
+    
+    time.seconds = time_int << (BITS - S_BITS) >> (BITS - S_BITS);
+    time.minutes = time_int << (BITS - M_BITS - S_BITS) >> (BITS - M_BITS);
+    time.hours = time_int << (BITS - H_BITS - M_BITS - S_BITS) >> (BITS - H_BITS);
+    
+    return time;
+}
+
 
 bool send_message(gps_data decoded_data) {
 	MessageBuilder messageBuilder;
