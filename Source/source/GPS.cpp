@@ -45,6 +45,7 @@ gps_data decode(string raw) {
 				data.height = minmea_tofloat(&ggaFrame.height);
 				data.time_stamp = toStringTime(&ggaFrame.time);
 				data.time = encode_time_as_int(&ggaFrame.time);
+				data.fix_quality = ggaFrame.fix_quality;
 			}
 		}
 	}
@@ -180,12 +181,13 @@ int main() {
         
         close_nmea_file(); // reset file stream
         while(poll(&paragraph)) {
-            if(send_message(decode(paragraph))) {
-                if(check_file.is_open() && !getline(check_file, check_line))
-                    check_file.close();
-                else
-                    cout << INDENT_SPACES << INDENT_SPACES << "Sanity check: " + check_line << endl << endl;
-            }
+			gps_data data = decode(paragraph);
+			if (check_gps_data(data) && send_message(data)) {
+				if (check_file.is_open() && !getline(check_file, check_line))
+					check_file.close();
+				else
+					cout << INDENT_SPACES << INDENT_SPACES << "Sanity check: " + check_line << endl << endl;
+			}
         }
     }
 }
