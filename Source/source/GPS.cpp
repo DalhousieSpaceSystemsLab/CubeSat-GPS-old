@@ -28,7 +28,7 @@ bool poll(string *message) {
 
 //send in a NMEA string, get organized gps_data
 void decode(string raw) { 
-	data = {};
+	data = (const struct gps_data) {};
 	minmea_sentence_gga ggaFrame;
 	minmea_sentence_zda zdaFrame;
 
@@ -79,9 +79,20 @@ unsigned int encode_time_as_int(struct minmea_time *time) {
 
 //scheduler class to send messages
 void test() {
+	cout << "== TEST MODE ==" << endl;
 	//poll()
-	decode("$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47");
+	decode("$GPGGA,184911.211,4448.547,N,09323.027,W,1,12,1.0,0.0,M,0.0,M,,*7E");
 	send_message(&data);
+	string rawnmea;
+	poll(&rawnmea);
+	send_message(&data);
+	poll(&rawnmea);
+	send_message(&data);
+	poll(&rawnmea);
+	send_message(&data);
+	poll(&rawnmea);
+	send_message(&data);
+
 
 	decode("$GPGGA,012219,1237.038,N,01531.000,E,1,08,0.9,125.4,M,46.9,M,,*47\n$GPZDA,201530.00,04,07,2002,00,00*60");
 	stringstream paragraph;
@@ -90,6 +101,7 @@ void test() {
 	paragraph << "$GPGGA,022454,3553.5295,N,13938.6570,E,1,05,2.2,18.3,M,39.0,M,,*7F\n";
 
 	decode(paragraph.str());
+	send_message(&data);
 	
 	
     // Set 'true' to print verification for ALL data in nmea file, assuming associated *.check file exists (see SanityCheck.h)
@@ -138,7 +150,6 @@ int gps_loop() {
 
 int main(int argc, char *argv[]) {
 	if (argc == 2 && (strcmp(argv[1], "-t") == 0)) {
-		cout << "== TEST MODE ==" << endl;
 		test();
 		return 1;
 	}
