@@ -24,6 +24,7 @@ struct gps_data {
     float altitude;
     float height;
     unsigned int time;
+	int fix_quality;
 };
 
 struct gps_time {
@@ -39,6 +40,7 @@ int main();
 bool init_gps();
 bool poll(string *message);
 gps_data decode(string raw);
+bool check_gps_data(gps_data data);
 bool send_message(gps_data decoded_data);
 string toStringTime(struct minmea_time *time);
 string toStringTime(struct gps_time *time);
