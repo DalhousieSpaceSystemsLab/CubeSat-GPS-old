@@ -16,7 +16,6 @@ bool init_gps() {
     return true;
 }
 
-
 //polls the GPS, gets data if turned on
 bool poll(string *message) {
     if (init_gps()) {
@@ -38,12 +37,13 @@ void decode(string raw) {
 	if (parse != NULL) {
 		while (getline(ss, to, '\n')) {
 			string sentence = to;
-			if (minmea_parse_gga(&ggaFrame, sentence.c_str())) {
+			if (minmea_parse_gga(&ggaFrame, sentence.c_str()) && minmea_check(sentence.c_str(), false)) {
 				data.altitude = minmea_tofloat(&ggaFrame.altitude);
 				data.latitude = minmea_tocoord(&ggaFrame.latitude);
 				data.longitude = minmea_tocoord(&ggaFrame.longitude);
 				data.height = minmea_tofloat(&ggaFrame.height);
 				data.time = encode_time_as_int(&ggaFrame.time);
+				data.fix_quality = ggaFrame.fix_quality;
 			}
 			else if (minmea_parse_zda(&zdaFrame, sentence.c_str())) {
 				data.time = encode_time_as_int(&zdaFrame.time);
@@ -51,6 +51,31 @@ void decode(string raw) {
 			}
 		}
 	}
+<<<<<<< HEAD
+=======
+	struct gps_time decoded_time = decode_time_from_int(data.time);
+	printf("time: %s\nenc_time: %s\naltitude: %f\n(%f, %f)\nheight: %f\n\n",
+	data.time_stamp.c_str(), toStringTime(&decoded_time).c_str(), data.altitude, data.latitude, data.longitude, data.height);
+	
+	return data;
+}
+
+bool check_gps_data(gps_data data) {
+	if (data.fix_quality == 0 ||
+		isnan(data.altitude) || isnan(data.height) ||
+		isnan(data.latitude) || data.latitude < -90 || data.latitude > 90 ||
+		isnan(data.longitude) || data.longitude < -180 || data.longitude > 180
+		) {
+		return false;
+	}
+	return true;
+}
+
+string toStringTime(struct minmea_time *time) {
+	stringstream timeString;
+	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
+	return timeString.str();
+>>>>>>> master
 }
 
 string toStringTime(struct gps_time *time) {
@@ -111,6 +136,7 @@ void test() {
         
         close_nmea_file(); // reset file stream
         while(poll(&paragraph)) {
+<<<<<<< HEAD
 			decode(paragraph);
             if(send_message(&data)) {
                 if(check_file.is_open() && !getline(check_file, check_line))
@@ -146,6 +172,17 @@ int gps_loop() {
 	}
 	cout << "Message sent!" << endl;
 	return 1;
+=======
+			gps_data data = decode(paragraph);
+			if (check_gps_data(data) && send_message(data)) {
+				if (check_file.is_open() && !getline(check_file, check_line))
+					check_file.close();
+				else
+					cout << INDENT_SPACES << INDENT_SPACES << "Sanity check: " + check_line << endl << endl;
+			}
+        }
+    }
+>>>>>>> master
 }
 
 int main(int argc, char *argv[]) {
