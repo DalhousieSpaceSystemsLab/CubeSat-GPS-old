@@ -61,13 +61,13 @@ Message get_message(){
 
 	status_codes codes;
 	Identifiers identifiers;
-	//every 30 seconds, send a REQUEST message 
-	if (30 - chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - last_poll).count() == 0) {
+	//every 20 seconds, send a REQUEST message 
+	if (20 - chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - last_poll).count() == 0) {
 		cout << "TEST: Sending REQUEST message..." << endl;
 		container.AddKeyValuePair(0, codes.request);
 		last_poll = chrono::system_clock::now();
 	}
-	//every 20 seconds, send nothing
+	//every 30 seconds, send nothing
 	else if (20 - chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - last_empty_poll).count() == 0) {
 		cout << "TEST: Sending EMPTY message..." << endl;
 		last_empty_poll = chrono::system_clock::now();
