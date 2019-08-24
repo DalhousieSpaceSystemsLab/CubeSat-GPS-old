@@ -74,7 +74,7 @@ Message get_message(){
 	}
 	else {
 		cout << "TEST: Sending STANDBY message..." << endl;
-    	container.AddKeyValuePair(0, codes.standby);
+    		container.AddKeyValuePair(0, codes.standby);
 	}
 
 	builder.SetMessageContents(container);
