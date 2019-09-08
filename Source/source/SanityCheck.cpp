@@ -21,7 +21,6 @@ bool read_nmea_from_file(string *data) {
         cout << "Unable to open file: '" << nmea_filename << "'" << endl;
     }
     *data = nmea_paragraph;
-
     return (nmea_paragraph.length() > 0);
 }
 
