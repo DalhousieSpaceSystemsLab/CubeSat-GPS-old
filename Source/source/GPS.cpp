@@ -51,13 +51,6 @@ void decode(string raw) {
 			}
 		}
 	}
-<<<<<<< HEAD
-=======
-	struct gps_time decoded_time = decode_time_from_int(data.time);
-	printf("time: %s\nenc_time: %s\naltitude: %f\n(%f, %f)\nheight: %f\n\n",
-	data.time_stamp.c_str(), toStringTime(&decoded_time).c_str(), data.altitude, data.latitude, data.longitude, data.height);
-	
-	return data;
 }
 
 bool check_gps_data(gps_data data) {
@@ -69,13 +62,6 @@ bool check_gps_data(gps_data data) {
 		return false;
 	}
 	return true;
-}
-
-string toStringTime(struct minmea_time *time) {
-	stringstream timeString;
-	timeString << time->hours << ":" << time->minutes << ":" << time->seconds << ":" << time->microseconds;
-	return timeString.str();
->>>>>>> master
 }
 
 string toStringTime(struct gps_time *time) {
@@ -136,7 +122,6 @@ void test() {
         
         close_nmea_file(); // reset file stream
         while(poll(&paragraph)) {
-<<<<<<< HEAD
 			decode(paragraph);
             if(send_message(&data)) {
                 if(check_file.is_open() && !getline(check_file, check_line))
@@ -172,17 +157,6 @@ int gps_loop() {
 	}
 	cout << "Message sent!" << endl;
 	return 1;
-=======
-			gps_data data = decode(paragraph);
-			if (check_gps_data(data) && send_message(data)) {
-				if (check_file.is_open() && !getline(check_file, check_line))
-					check_file.close();
-				else
-					cout << INDENT_SPACES << INDENT_SPACES << "Sanity check: " + check_line << endl << endl;
-			}
-        }
-    }
->>>>>>> master
 }
 
 int main(int argc, char *argv[]) {

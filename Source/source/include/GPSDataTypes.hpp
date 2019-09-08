@@ -22,6 +22,7 @@ struct gps_data {
     float altitude;
     float height;
     unsigned int time;
+    float fix_quality;
 };
 
 struct gps_time {
