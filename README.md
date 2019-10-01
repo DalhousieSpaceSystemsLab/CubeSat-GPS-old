@@ -27,7 +27,7 @@ make
 ```
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. Our feature list is located on [Trello](https://trello.com/b/jXkRj0IH/loris-payload)
+Pull requests are welcome. Our feature list is located on [Trello](https://trello.com/b/jXkRj0IH/loris-payload). For major changes, please open a trello task first to discuss what you would like to change
 
 ## Special Thanks
 [minmea](https://github.com/kosma/minmea) - a lightweight GPS NMEA 0183 Parser used in this repository
