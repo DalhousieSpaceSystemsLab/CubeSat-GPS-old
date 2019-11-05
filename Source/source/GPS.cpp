@@ -3,17 +3,27 @@
 #define INDENT_SPACES "  "
 
 gps_data data;
+auto start_time = std::chrono::high_resolution_clock::now();
+std::chrono::duration<double> elapsed = start_time - start_time;
 
 //checks if GPS is turned on, if not, turn on. 
 //returns TRUE if successful, FALSE otherwise
 bool init_gps() {
     if (!gpsOn) {
         //if can turn on gps
+        cout << "GPS cold start begin" << endl;
         gpsOn = true;
+	
+	elapsed = std::chrono::high_resolution_clock::now() - start_time;
+	cout << "GPS started - TIME:" << elapsed.count() << endl;
         return true;
         //if cant turn on gps, return false
     }
-    return true;
+    if (gpsOn) {
+        cout << "GPS warm start begin" << endl;
+        return true;
+    }
+    return false;
 }
 
 //polls the GPS, gets data if turned on
@@ -30,10 +40,16 @@ void decode(string raw) {
 	data = (const struct gps_data) {};
 	minmea_sentence_gga ggaFrame;
 	minmea_sentence_zda zdaFrame;
+	elapsed = std::chrono::high_resolution_clock::now() - start_time;
+	cout << "GPS decode: begin parsing sentence - TIME:" << elapsed.count() << endl;
 
 	const char* parse = raw.c_str();
 	stringstream ss(parse);
 	string to;
+
+	elapsed = std::chrono::high_resolution_clock::now() - start_time;
+	cout << "GPS decode: end parsing sentence and start storing data - TIME:" << elapsed.count() << endl;
+	
 	if (parse != NULL) {
 		while (getline(ss, to, '\n')) {
 			string sentence = to;
@@ -135,12 +151,19 @@ void test() {
 
 int gps_loop() {
 	string raw_nmea;
+	start_time = std::chrono::high_resolution_clock::now();
+	cout << "Start gps_loop" << endl;
+	
 	cout << "Initializing GPS..." << endl;
 	if (!init_gps()) {
 		cout << "INITIALIZING FAILED" << endl;
 		return 0;
 	}
 	cout << "GPS Initialized!" << endl;
+
+	elapsed = std::chrono::high_resolution_clock::now() - start_time;
+	cout << "GPS initialized, start poll - TIME:" << elapsed.count() <<endl;
+	
 	cout << "Polling GPS..." << endl;
 	if (!poll(&raw_nmea)) {
 		cout << "POLL FAILED" << endl;
@@ -148,14 +171,25 @@ int gps_loop() {
 		return 0;
 	}
 	cout << "GPS Polled!" << endl;
+
+	elapsed = std::chrono::high_resolution_clock::now() - start_time;
+	cout << "GPS poll finished, start decode - TIME:" << elapsed.count() << endl;
+	
 	cout << "Decoding NMEA Data" << endl;
 	decode(raw_nmea);
+
+	elapsed = std::chrono::high_resolution_clock::now() - start_time;
+	cout << "GPS decode finished, start sending - TIME:" << elapsed.count() << endl;
+	
 	cout << "Sending results..." << endl;
 	if (!send_message(&data)) {
 		cout << "MESSAGE FAILED TO SEND" << endl;
 		return 0;
 	}
 	cout << "Message sent!" << endl;
+
+	elapsed = std::chrono::high_resolution_clock::now() - start_time;
+	cout << "GPS message sent - TOTAL TIME:" << elapsed.count() << endl;
 	return 1;
 }
 
