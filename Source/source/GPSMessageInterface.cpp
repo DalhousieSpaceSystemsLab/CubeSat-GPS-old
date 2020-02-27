@@ -9,13 +9,11 @@ chrono::system_clock::time_point last_empty_poll = chrono::system_clock::now();
 // code for sending out and recieving messages from the OBC
 // note: this class can absolutely be mocked out for unit tests
 bool send_message(gps_data* decoded_data) {
-	//KeyValuePairContainer container;
 	CommandMessage message;
 
 	message.SetSender(identifiers.payload_subsystem);
 	message.SetRecipient(identifiers.payload_repository);
-	message.SetTimeCreated(CURRENT_TIME); //check that CURRENT_TIME actually works in GPS.hpp
-	//?????? maybe?
+	message.SetTimeCreated(CURRENT_TIME);
 	message.Add(data_types.latitude, decoded_data -> latitude);
 	message.Add(data_types.longitude, decoded_data -> longitude);
 
@@ -25,10 +23,6 @@ bool send_message(gps_data* decoded_data) {
 	message.Add(data_types.altitude, decoded_data -> altitude);
 
 	interface.Reply(message);
-	
-	//MessageSenderInterface ms(message.GetRecipient());
-	//ms.SendMessage(message);
-	
 	cout << endl << "== BEGIN CONTENTS ==" << endl;
 	cout << endl << "RECIPIENT: " << message.GetRecipient() << endl
 		<< "SENDER: " << message.GetSender() << endl
