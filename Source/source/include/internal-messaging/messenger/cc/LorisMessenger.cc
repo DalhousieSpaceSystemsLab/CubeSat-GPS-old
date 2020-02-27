@@ -21,18 +21,28 @@ int LorisMessenger::Add(unsigned int key, float value){
 	return 0;
 }
 
-int LorisMessenger::ClearMessage(){
-	//TODO potential memory leak...
-	this->current_message_=Message();
+int LorisMessenger::Add(unsigned int key, std::string value){
+	this->current_message_.Add(key,value);
 	return 0;
 }
 
-int LorisMessenger::Send(unsigned int recipient, unsigned int sender){
-    MessageSenderInterface ms(recipient);//TODO This should just be an interface...
+int LorisMessenger::AddRequest(int request){
+	this->current_message_.AddRequest(request);
+	return 0;
+}
+
+int LorisMessenger::ClearMessage(){
+	//TODO potential memory leak...
+	this->current_message_=DataMessage();
+	return 0;
+}
+
+string LorisMessenger::Send(unsigned int recipient, unsigned int sender){
+    MessageSendingService ms(recipient);
     this->current_message_.SetRecipient(recipient);
     this->current_message_.SetSender(sender);
 
-    ms.SendMessage(this->current_message_);
+    string reply=ms.SendDataMessage(this->current_message_);
     ClearMessage();
-    return 0;
+    return reply;
 }

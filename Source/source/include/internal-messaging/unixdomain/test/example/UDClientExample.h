@@ -7,14 +7,11 @@
 
 #include "../header/UnixDomainStreamSocketClient.h"
 
-
+//This is an example of implimenting a Unix Domain Stream Socket Client
+//Classes do not typically inherit from UnixDomainStreamSocketClient as Messager can be used to send Messages instead.
 class UDClientExample : public UnixDomainStreamSocketClient {
 public:
     UDClientExample(char sun_path[]);
-
-    //Return 0 if request handled successfully
-    //Return 1 if request handling failed
-    int HandleMessage(char *buffer);
 };
 
 #endif //DALCUBESAT_UXCLIENTEXAMPLE_H
