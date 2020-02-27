@@ -36,3 +36,7 @@ string toStringTime(struct gps_time *time);
 unsigned int encode_time_as_int(struct minmea_time *time);
 
 #endif
+
+#ifndef CURRENT_TIME
+#define CURRENT_TIME chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count()
+#endif
