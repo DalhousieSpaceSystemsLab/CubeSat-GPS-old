@@ -24,8 +24,6 @@ SET ( unixdomain
 )
 
 SET ( message 
-   ${OS}/message/cc/MessageBuilder.cc
-   ${OS}/message/cc/Message.cc
    ${OS}/message/cc/DataMessage.cc
    ${OS}/message/cc/CommandMessage.cc
    ${OS}/message/cc/KeyValuePairContainer.cc
