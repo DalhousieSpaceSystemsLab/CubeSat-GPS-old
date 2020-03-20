@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
 
 	status_codes codes;
 	chrono::system_clock::time_point last_poll = chrono::system_clock::now();
-	Message message;
+	CommandMessage message;
 	string raw_nmea;
 	bool messageSuccess = false;
 

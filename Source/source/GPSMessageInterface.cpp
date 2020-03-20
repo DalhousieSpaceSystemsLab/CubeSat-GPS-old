@@ -1,4 +1,7 @@
 #include "GPSMessageInterface.hpp"
+Identifiers identifiers;
+MessageReceivingService interface(identifiers.payload_repository);
+
 GPS_Data_Types data_types;
 chrono::system_clock::time_point last_poll = chrono::system_clock::now();
 chrono::system_clock::time_point last_empty_poll = chrono::system_clock::now();
@@ -6,39 +9,20 @@ chrono::system_clock::time_point last_empty_poll = chrono::system_clock::now();
 // code for sending out and recieving messages from the OBC
 // note: this class can absolutely be mocked out for unit tests
 bool send_message(gps_data* decoded_data) {
-	MessageBuilder messageBuilder;
-	Identifiers identifiers;
-	messageBuilder.StartMessage();
-	
+	CommandMessage message;
 
-	KeyValuePairContainer container;
-	container.AddKeyValuePair(data_types.latitude, decoded_data -> latitude);
-	container.AddKeyValuePair(data_types.longitude, decoded_data -> longitude);
+	message.SetSender(identifiers.payload_subsystem);
+	message.SetRecipient(identifiers.payload_repository);
+	message.SetTimeCreated(CURRENT_TIME);
+	message.Add(data_types.latitude, decoded_data -> latitude);
+	message.Add(data_types.longitude, decoded_data -> longitude);
+
 	if (!isnan(decoded_data -> time))
-		container.AddKeyValuePair(data_types.time, (int) decoded_data -> time);
-	container.AddKeyValuePair(data_types.height, decoded_data -> height);
-	container.AddKeyValuePair(data_types.altitude, decoded_data -> altitude);
+		message.Add(data_types.time, (int) decoded_data -> time);
+	message.Add(data_types.height, decoded_data -> height);
+	message.Add(data_types.altitude, decoded_data -> altitude);
 
-	messageBuilder.SetMessageContents(container);
-	messageBuilder.SetRecipient(identifiers.gps_repository);
-	messageBuilder.SetSender(identifiers.gps_subsystem);
-	
-
-	Message message = messageBuilder.CompleteMessage();
-
-	char msg[256] = "";
-	message.flatten(msg);
-	
-	//MessageSenderInterface ms(message.GetRecipient());
-	//ms.SendMessage(message);
-
-	
-	message = Message(msg);
-
-	//vector<int> keys = message.GetMessageContents().GetKeys();
-
-	KeyValuePairContainer c = message.GetMessageContents();
-	
+	interface.Reply(message);
 	cout << endl << "== BEGIN CONTENTS ==" << endl;
 	cout << endl << "RECIPIENT: " << message.GetRecipient() << endl
 		<< "SENDER: " << message.GetSender() << endl
@@ -54,17 +38,14 @@ bool send_message(gps_data* decoded_data) {
 }
 
 
-Message get_message(){
-	MessageBuilder builder;
-	builder.StartMessage();
-	KeyValuePairContainer container;
-
+CommandMessage get_message(){
+	CommandMessage message;
+	Identifiers indentifiers;
 	status_codes codes;
-	Identifiers identifiers;
 	//every 20 seconds, send a REQUEST message 
 	if (20 - chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - last_poll).count() == 0) {
 		cout << "TEST: Sending REQUEST message..." << endl;
-		container.AddKeyValuePair(0, codes.request);
+		message.Add(0, codes.request);
 		last_poll = chrono::system_clock::now();
 	}
 	//every 30 seconds, send nothing
@@ -74,11 +55,10 @@ Message get_message(){
 	}
 	else {
 		cout << "TEST: Sending STANDBY message..." << endl;
-    		container.AddKeyValuePair(0, codes.standby);
+    		message.Add(0, codes.standby);
 	}
 
-	builder.SetMessageContents(container);
-	builder.SetRecipient(identifiers.gps_subsystem);
-	builder.SetSender(identifiers.gps_repository);
-	return builder.CompleteMessage();
+	message.SetRecipient(identifiers.payload_subsystem);
+	message.SetSender(identifiers.payload_repository);
+	return message;
 }

@@ -9,6 +9,7 @@ SET ( OS include/internal-messaging)
 include_directories ( 
    include 
 
+   ${OS}/messaging-service/header
    ${OS}/message/header 
    ${OS}/message/identifiers 
    ${OS}/unixdomain/header
@@ -23,11 +24,13 @@ SET ( unixdomain
 )
 
 SET ( message 
-
+   ${OS}/message/cc/DataMessage.cc
+   ${OS}/message/cc/CommandMessage.cc
+   ${OS}/message/cc/KeyValuePairContainer.cc
    ${OS}/message/cc/Key.cc 
    ${OS}/message/cc/KeyIntPair.cc 
    ${OS}/message/cc/KeyFloatPair.cc
-   ${OS}/message/cc/KeyValuePairContainer.cc 
+   ${OS}/message/cc/KeyStringPair.cc
    ${OS}/message/cc/KeyValuePairContainerInterface.cc 
    ${OS}/message/cc/Message.cc 
    ${OS}/message/cc/MessageBuilder.cc 
@@ -35,9 +38,9 @@ SET ( message
 )
 
 SET ( messaging-service 
-
-   ${OS}/messaging-service/cc/MessagingService.cc 
-   ${OS}/messaging-service/cc/MessageSenderInterface.cc 
+   ${OS}/messaging-service/cc/MessageRecievingService.cc
+   ${OS}/messaging-service/cc/PhoneBook.cc 
+   ${OS}/messaging-service/cc/MessageRecipientInterface.cc
 )
 
 set ( sanitycheck
@@ -52,5 +55,7 @@ add_executable( Loris-GPS
    GPSDecode.cpp
    include/minmea.c 
    ${message} 
+   ${unixdomain} 
+   ${messaging-service}
    ${sanitycheck} 
 )
